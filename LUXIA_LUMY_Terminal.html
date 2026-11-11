@@ -1,0 +1,1124 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>LUXIA LUMY Terminal</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;700&family=Tenor+Sans&display=swap">
+<style>
+/* Layout: Terminalgehäuse links (Bildschirm + Kartenleser), Walkthrough-Leiste rechts; auf dem Handy untereinander.
+   Bewusst nur ein Erscheinungsbild: die Palette aus dem Designkonzept (60-30-10). */
+:root {
+  --cream: #F5F1E8;   /* 60 % Hauptflächen */
+  --beige: #D7CBC4;   /* 30 % Sekundärflächen */
+  --navy: #000B3D;    /* 10 % Überschriften, Icons, aktive Elemente */
+  --navy-soft: #26305E;
+  --ink: #141933;
+  --muted: #4B5068;
+  --line: rgba(0, 11, 61, .16);
+  --page: #E4DCD3;
+  --display: "Alta", "Tenor Sans", "Gill Sans", sans-serif;
+  --text: "Palatino Linotype", "Palatino", "Book Antiqua", "URW Palladio L", Georgia, "Noto Naskh Arabic", "Geeza Pro", serif;
+  --scale: 1;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--page); color: var(--ink); font-family: var(--text);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 40px;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible, a:focus-visible, label:focus-within {
+  outline: 3px solid var(--navy); outline-offset: 3px;
+}
+svg.i { width: 1.5em; height: 1.5em; flex: none; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+
+.wrap { max-width: 1160px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 32px; align-items: start; }
+@media (max-width: 960px) { .wrap { grid-template-columns: minmax(0, 1fr); } }
+
+/* Gehäuse */
+.device { background: var(--navy); border-radius: 30px; padding: 16px 16px 0; box-shadow: 0 30px 60px -30px rgba(0, 11, 61, .55); max-width: 760px; width: 100%; justify-self: center; }
+.screen {
+  background: var(--cream); border-radius: 16px; overflow: hidden;
+  display: flex; flex-direction: column; height: 900px; position: relative;
+  font-size: calc(18px * var(--scale)); line-height: 1.45;
+}
+@media (max-width: 600px) { .device { padding: 8px 8px 0; border-radius: 20px; } .screen { height: 760px; font-size: calc(16px * var(--scale)); } }
+
+.reader { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 12px 18px; color: var(--cream); flex-wrap: wrap; }
+.reader-label { font-family: var(--display); letter-spacing: .14em; text-transform: uppercase; font-size: 13px; opacity: .8; }
+.card-btn {
+  display: inline-flex; align-items: center; gap: 12px; padding: 12px 20px; min-height: 56px;
+  border: 1.5px dashed rgba(245, 241, 232, .6); border-radius: 12px; background: transparent; color: var(--cream); font-weight: 700;
+}
+.card-btn:hover { background: var(--navy-soft); }
+.card-btn.on { border-style: solid; background: var(--cream); color: var(--navy); }
+.card-btn.hl { border: 3px solid var(--cream); }
+
+/* Kopfbereich */
+.top { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 18px 26px; border-bottom: 1px solid var(--line); }
+.brand { font-family: var(--display); letter-spacing: .2em; font-size: .78em; color: var(--navy); display: inline-flex; align-items: center; gap: 10px; }
+.brand img { height: 2.4em; width: auto; }
+.logo-card { background: var(--cream); border-radius: 18px; padding: 18px 26px; }
+.logo-card img { display: block; width: 150px; height: auto; }
+.state { display: inline-flex; align-items: center; gap: 8px; font-size: .78em; padding: 6px 12px; border-radius: 999px; background: var(--beige); color: var(--navy); }
+.state.on { background: var(--navy); color: var(--cream); }
+.state svg.i { width: 1.2em; height: 1.2em; }
+.clock { font-variant-numeric: tabular-nums; color: var(--muted); font-size: .85em; }
+
+main { flex: 1; overflow-y: auto; padding: 26px 26px 30px; display: flex; flex-direction: column; gap: 22px; }
+h1 { font-family: var(--display); text-transform: uppercase; letter-spacing: .08em; font-weight: 400; color: var(--navy); font-size: 1.9em; line-height: 1.1; margin: 0; text-wrap: balance; }
+h2 { font-weight: 700; color: var(--navy); font-size: 1.1em; margin: 0; }
+p { margin: 0; }
+.lead { color: var(--muted); max-width: 34em; }
+
+/* Funktionsflächen */
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.tile {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 14px; text-align: start;
+  background: var(--beige); border: 0; border-radius: 14px; padding: 20px; min-height: 128px; color: var(--navy);
+}
+.tile:hover { background: #CDBFB7; }
+.tile svg.i { width: 2.1em; height: 2.1em; }
+.tile > span { min-width: 0; max-width: 100%; }
+.tile b { font-size: 1.12em; display: block; }
+.screen, .screen * { overflow-wrap: break-word; hyphens: auto; }
+/* große Textstufen: Kacheln einspaltig, Icon neben dem Text */
+.screen.large .tiles { grid-template-columns: minmax(0, 1fr); }
+.screen.large .tile { min-height: 0; flex-direction: row; align-items: center; }
+.screen.large .nav { flex-wrap: wrap; }
+.screen.large .nav .btn { min-width: 0; flex: 1 1 8em; }
+.screen.large .top { flex-wrap: wrap; }
+.screen.large .dish-head { flex-wrap: wrap; }
+.tile small { color: var(--muted); font-size: .8em; display: block; margin-top: 2px; }
+.tile.locked small { color: var(--navy); }
+@media (max-width: 420px) { .tiles { grid-template-columns: minmax(0, 1fr); } .tile { min-height: 0; flex-direction: row; align-items: center; } }
+
+.hint { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border-radius: 12px; border: 1.5px solid var(--navy); color: var(--navy); background: var(--cream); }
+.hint.solid { background: var(--navy); color: var(--cream); border-color: var(--navy); }
+.hint.solid .btn { background: var(--cream); color: var(--navy); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 56px; padding: 0 22px; border-radius: 12px; border: 0; background: var(--navy); color: var(--cream); font-weight: 700; }
+.btn:hover { background: var(--navy-soft); }
+.btn.ghost { background: transparent; color: var(--navy); border: 1.5px solid var(--navy); }
+.btn.ghost:hover { background: var(--beige); }
+.btn[disabled] { background: transparent; color: var(--muted); border: 1.5px dashed var(--muted); cursor: not-allowed; }
+
+/* Listen und Karten */
+.list { display: flex; flex-direction: column; gap: 12px; }
+.item { display: flex; gap: 16px; align-items: flex-start; background: var(--beige); border-radius: 14px; padding: 16px 18px; border: 0; text-align: start; width: 100%; color: var(--ink); }
+button.item:hover { background: #CDBFB7; }
+.item .time { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--navy); min-width: 4.4em; }
+.item .body { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.item .meta { color: var(--muted); font-size: .88em; }
+.item.changed { background: var(--cream); border: 2px solid var(--navy); }
+.flag { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; background: var(--navy); color: var(--cream); font-size: .8em; font-weight: 700; padding: 4px 10px; border-radius: 6px; }
+.flag svg.i { width: 1.15em; height: 1.15em; }
+.old { text-decoration: line-through; color: var(--muted); }
+.chev { margin-inline-start: auto; align-self: center; color: var(--navy); }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(9em, 1fr)); gap: 12px; }
+.fact { background: var(--beige); border-radius: 12px; padding: 12px 14px; }
+.fact span { display: block; font-size: .78em; color: var(--muted); }
+.fact b { color: var(--navy); font-variant-numeric: tabular-nums; }
+
+.seg { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip { min-height: 52px; padding: 0 18px; border-radius: 12px; border: 1.5px solid var(--navy); background: transparent; color: var(--navy); display: inline-flex; align-items: center; gap: 8px; }
+.chip[aria-pressed="true"] { background: var(--navy); color: var(--cream); }
+.chip .d { font-variant-numeric: tabular-nums; font-size: .82em; opacity: .8; }
+
+.choice { display: flex; gap: 16px; align-items: flex-start; text-align: start; padding: 18px; border-radius: 14px; border: 2px solid transparent; background: var(--beige); color: var(--ink); width: 100%; }
+.choice[aria-pressed="true"] { border-color: var(--navy); background: var(--cream); }
+.choice .tick { margin-inline-start: auto; color: var(--navy); visibility: hidden; }
+.choice[aria-pressed="true"] .tick { visibility: visible; }
+.choice svg.i { color: var(--navy); width: 2em; height: 2em; }
+
+.search { display: flex; align-items: center; gap: 12px; border: 2px solid var(--navy); border-radius: 12px; padding: 0 16px; background: var(--cream); color: var(--navy); }
+.search input { flex: 1; min-width: 0; border: 0; background: transparent; font: inherit; color: var(--ink); min-height: 56px; outline: none; }
+
+.map { background: #EDE6DC; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); }
+.map svg { display: block; width: 100%; height: auto; }
+
+.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; counter-reset: s; }
+.steps li { display: flex; gap: 14px; align-items: flex-start; background: var(--beige); padding: 14px 16px; border-radius: 12px; }
+.steps li svg.i { color: var(--navy); margin-top: 2px; }
+.steps li.key { background: var(--cream); border: 2px solid var(--navy); }
+
+.dish { background: var(--beige); border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+.dish-head { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
+.price { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--navy); white-space: nowrap; text-align: end; }
+.price small { display: block; font-weight: 400; color: var(--muted); font-size: .72em; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag { font-size: .78em; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--navy); color: var(--navy); }
+.tag.strong { background: var(--navy); color: var(--cream); }
+.more { align-self: flex-start; background: none; border: 0; padding: 6px 0; color: var(--navy); text-decoration: underline; text-underline-offset: 3px; min-height: 44px; }
+.allergens { font-size: .88em; color: var(--muted); }
+
+.table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.table td { padding: 10px 0; border-bottom: 1px solid var(--line); }
+.table td:last-child { text-align: end; color: var(--navy); font-weight: 700; }
+
+/* untere Navigation, immer an derselben Stelle */
+.nav { display: flex; justify-content: space-between; gap: 12px; padding: 14px 26px; border-top: 1px solid var(--line); background: var(--cream); }
+.nav .btn { min-width: 9.5em; }
+.nav .placeholder { visibility: hidden; }
+
+/* Rückmeldung beim Auflegen/Entfernen */
+.overlay { position: absolute; inset: 0; background: rgba(0, 11, 61, .92); color: var(--cream); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; text-align: center; padding: 30px; z-index: 5; }
+.overlay svg.i { width: 4em; height: 4em; }
+.overlay h2 { color: var(--cream); font-size: 1.5em; }
+.pulse { animation: pulse 1.1s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .45; } }
+.fade { animation: fade .25s ease-out; }
+@keyframes fade { from { opacity: .4; transform: translateY(6px); } }
+@media (prefers-reduced-motion: reduce) { .pulse, .fade { animation: none; } }
+
+.note { font-size: .82em; color: var(--muted); }
+
+/* hoher Kontrast: keine gedämpften Töne, Flächen hell mit dunkler Kontur */
+.screen.hc { --muted: var(--ink); --beige: #FFFFFF; --line: rgba(0, 11, 61, .55); }
+.screen.hc .tile, .screen.hc .item, .screen.hc .fact, .screen.hc .dish, .screen.hc .choice, .screen.hc .steps li { border: 2px solid var(--navy); }
+.screen.hc .tile:hover, .screen.hc button.item:hover { background: var(--cream); }
+
+/* Schreibrichtung und Schriften je Sprache */
+.screen[dir="rtl"] .flip { transform: scaleX(-1); }
+.screen:lang(ar) { line-height: 1.65; }
+.screen:lang(ar) h1 { font-family: var(--text); text-transform: none; letter-spacing: 0; font-weight: 700; }
+.reader-label:lang(ar) { letter-spacing: 0; }
+.map svg { direction: ltr; }
+
+/* Walkthrough-Leiste */
+.panel { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.panel h3 { font-family: var(--display); text-transform: uppercase; letter-spacing: .12em; font-weight: 400; font-size: 15px; color: var(--navy); margin: 0; }
+.panel .intro { font-size: 15px; color: var(--muted); }
+.tabs { display: flex; gap: 6px; background: var(--beige); padding: 5px; border-radius: 12px; }
+.tabs button { flex: 1; border: 0; background: transparent; padding: 10px 6px; border-radius: 8px; color: var(--navy); font-size: 15px; }
+.tabs button[aria-selected="true"] { background: var(--cream); font-weight: 700; }
+.task { background: var(--cream); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px; font-size: 15px; }
+.task .label { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.checks { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+.checks label { display: flex; gap: 10px; align-items: flex-start; padding: 8px 6px; border-radius: 8px; cursor: pointer; }
+.checks input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--navy); flex: none; }
+.checks .done span { color: var(--muted); text-decoration: line-through; }
+.checks .n { font-variant-numeric: tabular-nums; color: var(--navy); font-weight: 700; min-width: 1.1em; }
+.progress { height: 6px; border-radius: 3px; background: var(--beige); overflow: hidden; }
+.progress i { display: block; height: 100%; background: var(--navy); transition: width .3s; }
+.success { font-weight: 700; color: var(--navy); }
+.reset { align-self: flex-start; background: none; border: 1.5px solid var(--navy); color: var(--navy); border-radius: 10px; padding: 10px 16px; font-size: 15px; }
+.fontnote { font-size: 13px; color: var(--muted); }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h5v-6h3v6h5V10"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M7.5 14h3M7.5 17.5h3"/></symbol>
+  <symbol id="i-map" viewBox="0 0 24 24"><path d="M3 6.5 8.5 4.5l7 2.5 5.5-2v13l-5.5 2-7-2.5L3 19.5z"/><path d="M8.5 4.5v13M15.5 7v13"/><circle cx="12" cy="11" r="1.6"/></symbol>
+  <symbol id="i-bf" viewBox="0 0 24 24"><circle cx="10" cy="4" r="1.6"/><path d="M10 7v6h5l2 5"/><path d="M7 10.6a5.3 5.3 0 1 0 6.2 8"/><path d="M17 21.5h5" stroke-dasharray="1.5 2"/></symbol>
+  <symbol id="i-food" viewBox="0 0 24 24"><path d="M5 3v5a2 2 0 0 0 4 0V3M7 10v11"/><path d="M17 3c-2.2 2-2.2 7.5 0 9.5V21"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 6.5C10 5 7 4.5 3 4.5v14c4 0 7 .5 9 2 2-1.5 5-2 9-2v-14c-4 0-7 .5-9 2z"/><path d="M12 6.5v14"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+  <symbol id="i-card" viewBox="0 0 24 24"><rect x="2" y="6" width="13" height="12" rx="2"/><path d="M5 14h4"/><path d="M18 9.5a4 4 0 0 1 0 5M20.5 7.5a7 7 0 0 1 0 9"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
+  <symbol id="i-lang" viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M3 10h14M10 3c2.3 2.3 2.3 11.7 0 14M10 3c-2.3 2.3-2.3 11.7 0 14"/><path d="M15.5 22l2.5-6 2.5 6M16.4 20h3.2"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3.5 21.5 20h-19z"/><path d="M12 10v4.5M12 17.3v.2"/></symbol>
+  <symbol id="i-lift" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 9.5l3-3 3 3M9 14.5l3 3 3-3"/></symbol>
+  <symbol id="i-ramp" viewBox="0 0 24 24"><path d="M3 19h18V10z"/></symbol>
+  <symbol id="i-stairs" viewBox="0 0 24 24"><path d="M3 20h4v-4h4v-4h4V8h4V4h2"/></symbol>
+  <symbol id="i-door" viewBox="0 0 24 24"><path d="M6 21V3h12v18M3 21h18"/><path d="M14.5 12v.2"/></symbol>
+  <symbol id="i-walk" viewBox="0 0 24 24"><circle cx="13" cy="4" r="1.6"/><path d="M10 21l2-6-2-3 1-4 4 3h3M12 15l3 2 1 4M11 8l-4 2v3"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20.5 20.5 16 16"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5 10 17.5 19.5 7"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+  <symbol id="i-cross" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v15M6 13l6 6 6-6"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"/><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/></symbol>
+</svg>
+
+<div class="wrap">
+  <div class="device">
+    <div class="screen" id="screen" aria-live="polite"></div>
+    <div class="reader">
+      <span class="reader-label" id="readerLabel">Lesefläche CampusCard</span>
+      <button class="card-btn" id="cardBtn" type="button"></button>
+    </div>
+  </div>
+
+  <aside class="panel" aria-label="Cognitive Walkthrough">
+    <h3>Cognitive Walkthrough</h3>
+    <p class="intro">Klickdummy nach dem Designkonzept aus Meilenstein 2. Wähle eine Persona und klicke den Ablauf im Terminal durch. Erreichte Schritte werden automatisch abgehakt; du kannst sie auch selbst abhaken. Stand: überarbeitet nach den Cognitive Walkthroughs.</p>
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <div class="task" id="task"></div>
+    <button class="reset" id="reset" type="button">Prototyp zurücksetzen</button>
+  </aside>
+</div>
+
+<script>
+/* Logo ohne und mit Schriftzug (aus Canva, Rand beschnitten) */
+const LOGO = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iNTI1IiB6b29tQW5kUGFuPSJtYWduaWZ5IiB2aWV3Qm94PSI1MzAgMzcwIDUyNSA1NDUiIGhlaWdodD0iNTQ1IiBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJ4TWlkWU1pZCBtZWV0IiB2ZXJzaW9uPSIxLjAiPjxkZWZzPjxnLz48Y2xpcFBhdGggaWQ9IjgxZDY0MjVmNTYiPjxwYXRoIGQ9Ik0gNTU4IDQwMCBMIDEwMjYgNDAwIEwgMTAyNiA4ODcgTCA1NTggODg3IFogTSA1NTggNDAwICIgY2xpcC1ydWxlPSJub256ZXJvIi8+PC9jbGlwUGF0aD48Y2xpcFBhdGggaWQ9IjA2MWQxMzZkZjgiPjxwYXRoIGQ9Ik0gNDIyLjc4MTI1IDcwNC41NzQyMTkgTCA2OTUuNTQ2ODc1IDMwMC45OTYwOTQgTCAxMDc4LjE5NTMxMiA1NTkuNjE3MTg4IEwgODA1LjQzMzU5NCA5NjMuMTk1MzEyIFogTSA0MjIuNzgxMjUgNzA0LjU3NDIxOSAiIGNsaXAtcnVsZT0ibm9uemVybyIvPjwvY2xpcFBhdGg+PGNsaXBQYXRoIGlkPSI3OTRlMTk2ZmFhIj48cGF0aCBkPSJNIDU1OC42NzU3ODEgNTAzLjUwNzgxMiBMIDg0MC4zMzk4NDQgNDAwLjk2NDg0NCBMIDEwMjUuNDEwMTU2IDYzNy43MTg3NSBMIDg1Ny4yNDIxODggODg2LjUzOTA2MiBMIDU2OC41NTQ2ODggODAzLjA5NzY1NiBaIE0gNTU4LjY3NTc4MSA1MDMuNTA3ODEyICIgY2xpcC1ydWxlPSJub256ZXJvIi8+PC9jbGlwUGF0aD48Y2xpcFBhdGggaWQ9ImFiNjNlZDY1MzUiPjxwYXRoIGQ9Ik0gMC40ODA0NjkgMC44MDA3ODEgTCA0NjcuNTE5NTMxIDAuODAwNzgxIEwgNDY3LjUxOTUzMSA0ODYuNTU4NTk0IEwgMC40ODA0NjkgNDg2LjU1ODU5NCBaIE0gMC40ODA0NjkgMC44MDA3ODEgIiBjbGlwLXJ1bGU9Im5vbnplcm8iLz48L2NsaXBQYXRoPjxjbGlwUGF0aCBpZD0iYmY4MGYyMzEzOCI+PHBhdGggZD0iTSAtMTM1LjIxODc1IDMwNC41NzQyMTkgTCAxMzcuNTQ2ODc1IC05OS4wMDM5MDYgTCA1MjAuMTk1MzEyIDE1OS42MTcxODggTCAyNDcuNDMzNTk0IDU2My4xOTUzMTIgWiBNIC0xMzUuMjE4NzUgMzA0LjU3NDIxOSAiIGNsaXAtcnVsZT0ibm9uemVybyIvPjwvY2xpcFBhdGg+PGNsaXBQYXRoIGlkPSJhZjBhNWQxNGM2Ij48cGF0aCBkPSJNIDAuNjc1NzgxIDEwMy41MDc4MTIgTCAyODIuMzM5ODQ0IDAuOTY0ODQ0IEwgNDY3LjQxMDE1NiAyMzcuNzE4NzUgTCAyOTkuMjQyMTg4IDQ4Ni41MzkwNjIgTCAxMC41NTQ2ODggNDAzLjA5NzY1NiBaIE0gMC42NzU3ODEgMTAzLjUwNzgxMiAiIGNsaXAtcnVsZT0ibm9uemVybyIvPjwvY2xpcFBhdGg+PGNsaXBQYXRoIGlkPSJjY2JjYTA5Njg2Ij48cmVjdCB4PSIwIiB3aWR0aD0iNDY4IiB5PSIwIiBoZWlnaHQ9IjQ4NyIvPjwvY2xpcFBhdGg+PGNsaXBQYXRoIGlkPSI1ZmEzNDEwYzBmIj48cmVjdCB4PSIwIiB3aWR0aD0iMTk1IiB5PSIwIiBoZWlnaHQ9IjQyOCIvPjwvY2xpcFBhdGg+PGNsaXBQYXRoIGlkPSI0ZDdlODA4ZTkzIj48cmVjdCB4PSIwIiB3aWR0aD0iMTk2IiB5PSIwIiBoZWlnaHQ9IjQyNyIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGNsaXAtcGF0aD0idXJsKCM4MWQ2NDI1ZjU2KSI+PGcgY2xpcC1wYXRoPSJ1cmwoIzA2MWQxMzZkZjgpIj48ZyBjbGlwLXBhdGg9InVybCgjNzk0ZTE5NmZhYSkiPjxnIHRyYW5zZm9ybT0ibWF0cml4KDEsIDAsIDAsIDEsIDU1OCwgNDAwKSI+PGcgY2xpcC1wYXRoPSJ1cmwoI2NjYmNhMDk2ODYpIj48ZyBjbGlwLXBhdGg9InVybCgjYWI2M2VkNjUzNSkiPjxnIGNsaXAtcGF0aD0idXJsKCNiZjgwZjIzMTM4KSI+PGcgY2xpcC1wYXRoPSJ1cmwoI2FmMGE1ZDE0YzYpIj48cGF0aCBmaWxsPSIjMDAwYjNkIiBkPSJNIC0xMzUuMjE4NzUgMzA0LjU3NDIxOSBMIDEzNi41MzUxNTYgLTk3LjUwNzgxMiBMIDUxOS4xODc1IDE2MS4xMDkzNzUgTCAyNDcuNDMzNTk0IDU2My4xOTUzMTIgWiBNIC0xMzUuMjE4NzUgMzA0LjU3NDIxOSAiIGZpbGwtb3BhY2l0eT0iMSIgZmlsbC1ydWxlPSJub256ZXJvIi8+PC9nPjwvZz48L2c+PC9nPjwvZz48L2c+PC9nPjwvZz48ZyB0cmFuc2Zvcm09Im1hdHJpeCgxLCAwLCAwLCAxLCA3MDcsIDQxNikiPjxnIGNsaXAtcGF0aD0idXJsKCM1ZmEzNDEwYzBmKSI+PGcgZmlsbD0iI2E2YTZhNiIgZmlsbC1vcGFjaXR5PSIxIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgyLjcwODEzNywgMzE5LjMxNjEyMykiPjxnPjxwYXRoIGQ9Ik0gMTcuNjQwNjI1IC01LjI5Njg3NSBMIDIxLjg3NSAtNS4yOTY4NzUgQyAyNS4xNzU3ODEgLTUuNTIzNDM4IDI5IC02LjIyNjU2MiAzMy4zNDM3NSAtNy40MDYyNSBDIDM3LjY5NTMxMiAtOC41ODIwMzEgMzkuODc1IC0xMC43MDMxMjUgMzkuODc1IC0xMy43NjU2MjUgTCAzOS44NzUgLTIzNS43MzQzNzUgQyAzOS44NzUgLTIzNy44NTkzNzUgMzguNzUzOTA2IC0yMzkuNTY2NDA2IDM2LjUxNTYyNSAtMjQwLjg1OTM3NSBDIDM0LjI4NTE1NiAtMjQyLjE0ODQzOCAzMS42OTUzMTIgLTI0My4wMzEyNSAyOC43NSAtMjQzLjUgQyAyNS44MTI1IC0yNDMuOTc2NTYyIDIzLjIyMjY1NiAtMjQ0LjI3MzQzOCAyMC45ODQzNzUgLTI0NC4zOTA2MjUgQyAxOC43NTM5MDYgLTI0NC41MDM5MDYgMTcuNjQwNjI1IC0yNDQuNTYyNSAxNy42NDA2MjUgLTI0NC41NjI1IEwgMTcuNjQwNjI1IC0yNDkuNSBMIDc1LjE3MTg3NSAtMjQ5LjUgTCA3NS4xNzE4NzUgLTI0NC41NjI1IEMgNzUuMTcxODc1IC0yNDQuNTYyNSA3NC4wNTA3ODEgLTI0NC41MDM5MDYgNzEuODEyNSAtMjQ0LjM5MDYyNSBDIDY5LjU4MjAzMSAtMjQ0LjI3MzQzOCA2Ni45Mzc1IC0yNDMuOTc2NTYyIDYzLjg3NSAtMjQzLjUgQyA2MC44MTI1IC0yNDMuMDMxMjUgNTguMTYwMTU2IC0yNDIuMTQ4NDM4IDU1LjkyMTg3NSAtMjQwLjg1OTM3NSBDIDUzLjY5MTQwNiAtMjM5LjU2NjQwNiA1Mi41NzgxMjUgLTIzNy44NTkzNzUgNTIuNTc4MTI1IC0yMzUuNzM0Mzc1IEwgNTIuNTc4MTI1IC01LjI5Njg3NSBMIDE0My45ODQzNzUgLTUuMjk2ODc1IEMgMTQ3LjUxNTYyNSAtNS4yOTY4NzUgMTUwLjgwNDY4OCAtNi41ODU5MzggMTUzLjg1OTM3NSAtOS4xNzE4NzUgQyAxNTYuOTIxODc1IC0xMS43NjU2MjUgMTU5LjUwNzgxMiAtMTQuNDcyNjU2IDE2MS42MjUgLTE3LjI5Njg3NSBDIDE2My43NSAtMjAuMTE3MTg4IDE2NC45MjU3ODEgLTIxLjc2NTYyNSAxNjUuMTU2MjUgLTIyLjIzNDM3NSBMIDE2NS4xNTYyNSAtMjIuNTkzNzUgTCAxNzEuMTU2MjUgLTIyLjU5Mzc1IEwgMTU3LjM5MDYyNSAwIEwgMTcuNjQwNjI1IDAgWiBNIDE3LjY0MDYyNSAtNS4yOTY4NzUgIi8+PC9nPjwvZz48L2c+PC9nPjwvZz48ZyB0cmFuc2Zvcm09Im1hdHJpeCgxLCAwLCAwLCAxLCA2NTksIDQ3NCkiPjxnIGNsaXAtcGF0aD0idXJsKCM0ZDdlODA4ZTkzKSI+PGcgZmlsbD0iI2Q3Y2JjNCIgZmlsbC1vcGFjaXR5PSIxIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzLjAyNzQxOCwgMzE4LjY4ODU5OCkiPjxnPjxwYXRoIGQ9Ik0gMTcuNjQwNjI1IC01LjI5Njg3NSBMIDIxLjg3NSAtNS4yOTY4NzUgQyAyNS4xNzU3ODEgLTUuNTIzNDM4IDI5IC02LjIyNjU2MiAzMy4zNDM3NSAtNy40MDYyNSBDIDM3LjY5NTMxMiAtOC41ODIwMzEgMzkuODc1IC0xMC43MDMxMjUgMzkuODc1IC0xMy43NjU2MjUgTCAzOS44NzUgLTIzNS43MzQzNzUgQyAzOS44NzUgLTIzNy44NTkzNzUgMzguNzUzOTA2IC0yMzkuNTY2NDA2IDM2LjUxNTYyNSAtMjQwLjg1OTM3NSBDIDM0LjI4NTE1NiAtMjQyLjE0ODQzOCAzMS42OTUzMTIgLTI0My4wMzEyNSAyOC43NSAtMjQzLjUgQyAyNS44MTI1IC0yNDMuOTc2NTYyIDIzLjIyMjY1NiAtMjQ0LjI3MzQzOCAyMC45ODQzNzUgLTI0NC4zOTA2MjUgQyAxOC43NTM5MDYgLTI0NC41MDM5MDYgMTcuNjQwNjI1IC0yNDQuNTYyNSAxNy42NDA2MjUgLTI0NC41NjI1IEwgMTcuNjQwNjI1IC0yNDkuNSBMIDc1LjE3MTg3NSAtMjQ5LjUgTCA3NS4xNzE4NzUgLTI0NC41NjI1IEMgNzUuMTcxODc1IC0yNDQuNTYyNSA3NC4wNTA3ODEgLTI0NC41MDM5MDYgNzEuODEyNSAtMjQ0LjM5MDYyNSBDIDY5LjU4MjAzMSAtMjQ0LjI3MzQzOCA2Ni45Mzc1IC0yNDMuOTc2NTYyIDYzLjg3NSAtMjQzLjUgQyA2MC44MTI1IC0yNDMuMDMxMjUgNTguMTYwMTU2IC0yNDIuMTQ4NDM4IDU1LjkyMTg3NSAtMjQwLjg1OTM3NSBDIDUzLjY5MTQwNiAtMjM5LjU2NjQwNiA1Mi41NzgxMjUgLTIzNy44NTkzNzUgNTIuNTc4MTI1IC0yMzUuNzM0Mzc1IEwgNTIuNTc4MTI1IC01LjI5Njg3NSBMIDE0My45ODQzNzUgLTUuMjk2ODc1IEMgMTQ3LjUxNTYyNSAtNS4yOTY4NzUgMTUwLjgwNDY4OCAtNi41ODU5MzggMTUzLjg1OTM3NSAtOS4xNzE4NzUgQyAxNTYuOTIxODc1IC0xMS43NjU2MjUgMTU5LjUwNzgxMiAtMTQuNDcyNjU2IDE2MS42MjUgLTE3LjI5Njg3NSBDIDE2My43NSAtMjAuMTE3MTg4IDE2NC45MjU3ODEgLTIxLjc2NTYyNSAxNjUuMTU2MjUgLTIyLjIzNDM3NSBMIDE2NS4xNTYyNSAtMjIuNTkzNzUgTCAxNzEuMTU2MjUgLTIyLjU5Mzc1IEwgMTU3LjM5MDYyNSAwIEwgMTcuNjQwNjI1IDAgWiBNIDE3LjY0MDYyNSAtNS4yOTY4NzUgIi8+PC9nPjwvZz48L2c+PC9nPjwvZz48L3N2Zz4=";
+const LOGO_TEXT = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iNjUwIiB6b29tQW5kUGFuPSJtYWduaWZ5IiB2aWV3Qm94PSI0NTUgMzcwIDY1MCA2ODAiIGhlaWdodD0iNjgwIiBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJ4TWlkWU1pZCBtZWV0IiB2ZXJzaW9uPSIxLjAiPjxkZWZzPjxnLz48Y2xpcFBhdGggaWQ9IjZmOGZiYWRjODAiPjxwYXRoIGQ9Ik0gNTU4IDQwMCBMIDEwMjYgNDAwIEwgMTAyNiA4ODcgTCA1NTggODg3IFogTSA1NTggNDAwICIgY2xpcC1ydWxlPSJub256ZXJvIi8+PC9jbGlwUGF0aD48Y2xpcFBhdGggaWQ9IjU0MGQ5NzQwNGUiPjxwYXRoIGQ9Ik0gNDIyLjc4MTI1IDcwNC41NzQyMTkgTCA2OTUuNTQ2ODc1IDMwMC45OTYwOTQgTCAxMDc4LjE5NTMxMiA1NTkuNjE3MTg4IEwgODA1LjQzMzU5NCA5NjMuMTk1MzEyIFogTSA0MjIuNzgxMjUgNzA0LjU3NDIxOSAiIGNsaXAtcnVsZT0ibm9uemVybyIvPjwvY2xpcFBhdGg+PGNsaXBQYXRoIGlkPSI0ZTQwMDdhMTQ4Ij48cGF0aCBkPSJNIDU1OC42NzU3ODEgNTAzLjUwNzgxMiBMIDg0MC4zMzk4NDQgNDAwLjk2NDg0NCBMIDEwMjUuNDEwMTU2IDYzNy43MTg3NSBMIDg1Ny4yNDIxODggODg2LjUzOTA2MiBMIDU2OC41NTQ2ODggODAzLjA5NzY1NiBaIE0gNTU4LjY3NTc4MSA1MDMuNTA3ODEyICIgY2xpcC1ydWxlPSJub256ZXJvIi8+PC9jbGlwUGF0aD48Y2xpcFBhdGggaWQ9ImM4MTY4YmU5ZDkiPjxwYXRoIGQ9Ik0gMC40ODA0NjkgMC44MDA3ODEgTCA0NjcuNTE5NTMxIDAuODAwNzgxIEwgNDY3LjUxOTUzMSA0ODYuNTU4NTk0IEwgMC40ODA0NjkgNDg2LjU1ODU5NCBaIE0gMC40ODA0NjkgMC44MDA3ODEgIiBjbGlwLXJ1bGU9Im5vbnplcm8iLz48L2NsaXBQYXRoPjxjbGlwUGF0aCBpZD0iMjlkN2MwMGZlNCI+PHBhdGggZD0iTSAtMTM1LjIxODc1IDMwNC41NzQyMTkgTCAxMzcuNTQ2ODc1IC05OS4wMDM5MDYgTCA1MjAuMTk1MzEyIDE1OS42MTcxODggTCAyNDcuNDMzNTk0IDU2My4xOTUzMTIgWiBNIC0xMzUuMjE4NzUgMzA0LjU3NDIxOSAiIGNsaXAtcnVsZT0ibm9uemVybyIvPjwvY2xpcFBhdGg+PGNsaXBQYXRoIGlkPSIzYjZhMGQ1N2RkIj48cGF0aCBkPSJNIDAuNjc1NzgxIDEwMy41MDc4MTIgTCAyODIuMzM5ODQ0IDAuOTY0ODQ0IEwgNDY3LjQxMDE1NiAyMzcuNzE4NzUgTCAyOTkuMjQyMTg4IDQ4Ni41MzkwNjIgTCAxMC41NTQ2ODggNDAzLjA5NzY1NiBaIE0gMC42NzU3ODEgMTAzLjUwNzgxMiAiIGNsaXAtcnVsZT0ibm9uemVybyIvPjwvY2xpcFBhdGg+PGNsaXBQYXRoIGlkPSIyODU3ZTExZTQ1Ij48cmVjdCB4PSIwIiB3aWR0aD0iNDY4IiB5PSIwIiBoZWlnaHQ9IjQ4NyIvPjwvY2xpcFBhdGg+PGNsaXBQYXRoIGlkPSIxNmZlZGFkMzA5Ij48cmVjdCB4PSIwIiB3aWR0aD0iMTk1IiB5PSIwIiBoZWlnaHQ9IjQyOCIvPjwvY2xpcFBhdGg+PGNsaXBQYXRoIGlkPSJlNTk1NjE0YmYwIj48cmVjdCB4PSIwIiB3aWR0aD0iMTk2IiB5PSIwIiBoZWlnaHQ9IjQyNyIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGZpbGw9IiNkN2NiYzQiIGZpbGwtb3BhY2l0eT0iMSI+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNDkwLjAwNjUwMywgMTAwMS42OTE5MjYpIj48Zz48cGF0aCBkPSJNIDI5LjkyMTg3NSAwIEwgMi42MjUgMCBMIDIuNjI1IC0wLjQyMTg3NSBDIDQuMzc1IC0wLjcwMzEyNSA1LjQ4NDM3NSAtMS44MTI1IDUuOTUzMTI1IC0zLjc1IEMgNi40Mjk2ODggLTUuNjk1MzEyIDYuNjcxODc1IC04LjQ1MzEyNSA2LjY3MTg3NSAtMTIuMDE1NjI1IEMgNi42NzE4NzUgLTE2Ljc3MzQzOCA2LjY3MTg3NSAtMjEuNTE1NjI1IDYuNjcxODc1IC0yNi4yMzQzNzUgQyA2LjY3MTg3NSAtMzAuOTYwOTM4IDYuNjcxODc1IC0zNS43MDcwMzEgNi42NzE4NzUgLTQwLjQ2ODc1IEMgNi42NzE4NzUgLTQ0LjAzMTI1IDYuNDI5Njg4IC00Ni43ODkwNjIgNS45NTMxMjUgLTQ4Ljc1IEMgNS40ODQzNzUgLTUwLjcxODc1IDQuMzc1IC01MS44MjAzMTIgMi42MjUgLTUyLjA2MjUgTCAyLjYyNSAtNTIuNDg0Mzc1IEwgMTcuMTU2MjUgLTUyLjQ4NDM3NSBMIDE3LjE1NjI1IC01Mi4wNjI1IEMgMTUuNDA2MjUgLTUxLjgyMDMxMiAxNC4yOTY4NzUgLTUwLjcxODc1IDEzLjgyODEyNSAtNDguNzUgQyAxMy4zNTkzNzUgLTQ2Ljc4OTA2MiAxMy4xMjUgLTQ0LjAzMTI1IDEzLjEyNSAtNDAuNDY4NzUgQyAxMy4xMjUgLTM4LjQ2ODc1IDEzLjEyNSAtMzYuOTU3MDMxIDEzLjEyNSAtMzUuOTM3NSBDIDEzLjEyNSAtMzQuOTI1NzgxIDEzLjEyNSAtMzQuMjAzMTI1IDEzLjEyNSAtMzMuNzY1NjI1IEMgMTMuMTI1IC0zMy4zMzU5MzggMTMuMTEzMjgxIC0zMy4wMTU2MjUgMTMuMDkzNzUgLTMyLjc5Njg3NSBDIDEzLjA3MDMxMiAtMzIuNTg1OTM4IDEzLjA2MjUgLTMyLjMwNDY4OCAxMy4wNjI1IC0zMS45NTMxMjUgQyAxMy4wNjI1IC0zMS42MDkzNzUgMTMuMDYyNSAtMzEuMDAzOTA2IDEzLjA2MjUgLTMwLjE0MDYyNSBDIDEzLjA2MjUgLTI5LjI4NTE1NiAxMy4wNjI1IC0yNy45ODQzNzUgMTMuMDYyNSAtMjYuMjM0Mzc1IEMgMTMuMDYyNSAtMjAuODQ3NjU2IDEzLjA1MDc4MSAtMTYuMTMyODEyIDEzLjAzMTI1IC0xMi4wOTM3NSBDIDEzLjAxOTUzMSAtOC4wNTA3ODEgMTMuMDE1NjI1IC00LjU0Njg3NSAxMy4wMTU2MjUgLTEuNTc4MTI1IEwgMTkuMzEyNSAtMS41NzgxMjUgQyAyMy4xMjUgLTEuNTc4MTI1IDI2LjI4MTI1IC0xLjk2MDkzOCAyOC43ODEyNSAtMi43MzQzNzUgQyAzMS4yODkwNjIgLTMuNTAzOTA2IDMzLjMzNTkzOCAtNC42Mjg5MDYgMzQuOTIxODc1IC02LjEwOTM3NSBDIDM2LjUxNTYyNSAtNy41OTc2NTYgMzcuODM1OTM4IC05LjQxMDE1NiAzOC44OTA2MjUgLTExLjU0Njg3NSBMIDM5LjMxMjUgLTExLjU0Njg3NSBMIDM1LjM3NSAwLjg5MDYyNSBMIDM0Ljk1MzEyNSAwLjg5MDYyNSBDIDM0LjcxMDkzOCAwLjYwOTM3NSAzNC4yODUxNTYgMC40MDYyNSAzMy42NzE4NzUgMC4yODEyNSBDIDMzLjA1NDY4OCAwLjE2NDA2MiAzMi40MDYyNSAwLjA4NTkzNzUgMzEuNzE4NzUgMC4wNDY4NzUgQyAzMS4wMzkwNjIgMC4wMTU2MjUgMzAuNDQxNDA2IDAgMjkuOTIxODc1IDAgWiBNIDI5LjkyMTg3NSAwICIvPjwvZz48L2c+PC9nPjxnIGZpbGw9IiNkN2NiYzQiIGZpbGwtb3BhY2l0eT0iMSI+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNTUxLjQ0Mzk5MiwgOTk3LjUwNjExKSI+PGc+PHBhdGggZD0iTSAxLjkyMTg3NSAtMzguNDg0Mzc1IEwgMTIuNTQ2ODc1IC0zOC40ODQzNzUgTCAxMi41NDY4NzUgLTM4LjE3MTg3NSBDIDExLjI2NTYyNSAtMzcuOTkyMTg4IDEwLjQ0NTMxMiAtMzcuMTg3NSAxMC4wOTM3NSAtMzUuNzUgQyA5Ljc1IC0zNC4zMTI1IDkuNTc4MTI1IC0zMi4yODUxNTYgOS41NzgxMjUgLTI5LjY3MTg3NSBDIDkuNTc4MTI1IC0yNi4zMDQ2ODggOS41NzgxMjUgLTIyLjk0MTQwNiA5LjU3ODEyNSAtMTkuNTc4MTI1IEMgOS41NzgxMjUgLTE2LjIyMjY1NiA5LjU3ODEyNSAtMTIuODYzMjgxIDkuNTc4MTI1IC05LjUgQyA5LjU3ODEyNSAtNy44NjMyODEgOS44MjgxMjUgLTYuNDY4NzUgMTAuMzI4MTI1IC01LjMxMjUgQyAxMC44MjgxMjUgLTQuMTU2MjUgMTEuNDg0Mzc1IC0zLjIxMDkzOCAxMi4yOTY4NzUgLTIuNDg0Mzc1IEMgMTMuMTA5Mzc1IC0xLjc1MzkwNiAxMy45ODgyODEgLTEuMjIyNjU2IDE0LjkzNzUgLTAuODkwNjI1IEMgMTUuODgyODEyIC0wLjU1NDY4OCAxNi44MDQ2ODggLTAuMzkwNjI1IDE3LjcwMzEyNSAtMC4zOTA2MjUgQyAxOC41OTc2NTYgLTAuMzkwNjI1IDE5LjUxOTUzMSAtMC41NTQ2ODggMjAuNDY4NzUgLTAuODkwNjI1IEMgMjEuNDE0MDYyIC0xLjIyMjY1NiAyMi4yOTY4NzUgLTEuNzUzOTA2IDIzLjEwOTM3NSAtMi40ODQzNzUgQyAyMy45MjE4NzUgLTMuMjEwOTM4IDI0LjU3ODEyNSAtNC4xNTYyNSAyNS4wNzgxMjUgLTUuMzEyNSBDIDI1LjU3ODEyNSAtNi40Njg3NSAyNS44MjgxMjUgLTcuODYzMjgxIDI1LjgyODEyNSAtOS41IEMgMjUuODI4MTI1IC0xMi44NjMyODEgMjUuODI4MTI1IC0xNi4yMjI2NTYgMjUuODI4MTI1IC0xOS41NzgxMjUgQyAyNS44MjgxMjUgLTIyLjk0MTQwNiAyNS44MjgxMjUgLTI2LjMwNDY4OCAyNS44MjgxMjUgLTI5LjY3MTg3NSBDIDI1LjgyODEyNSAtMzIuMjg1MTU2IDI1LjY0ODQzOCAtMzQuMzEyNSAyNS4yOTY4NzUgLTM1Ljc1IEMgMjQuOTUzMTI1IC0zNy4xODc1IDI0LjE0MDYyNSAtMzcuOTkyMTg4IDIyLjg1OTM3NSAtMzguMTcxODc1IEwgMjIuODU5Mzc1IC0zOC40ODQzNzUgTCAzMy40ODQzNzUgLTM4LjQ4NDM3NSBMIDMzLjQ4NDM3NSAtMzguMTcxODc1IEMgMzIuMjAzMTI1IC0zNy45OTIxODggMzEuMzgyODEyIC0zNy4xODc1IDMxLjAzMTI1IC0zNS43NSBDIDMwLjY4NzUgLTM0LjMxMjUgMzAuNTE1NjI1IC0zMi4yODUxNTYgMzAuNTE1NjI1IC0yOS42NzE4NzUgQyAzMC41MTU2MjUgLTI2LjMzNTkzOCAzMC41MTU2MjUgLTIzLjAwNzgxMiAzMC41MTU2MjUgLTE5LjY4NzUgQyAzMC41MTU2MjUgLTE2LjM2MzI4MSAzMC41MTU2MjUgLTEzLjAzNTE1NiAzMC41MTU2MjUgLTkuNzAzMTI1IEMgMzAuNTE1NjI1IC03LjU2NjQwNiAzMC4wMTU2MjUgLTUuNzA3MDMxIDI5LjAxNTYyNSAtNC4xMjUgQyAyOC4wMTU2MjUgLTIuNTUwNzgxIDI2LjU2NjQwNiAtMS4zNDM3NSAyNC42NzE4NzUgLTAuNSBDIDIyLjc3MzQzOCAwLjM0Mzc1IDIwLjQ3NjU2MiAwLjc2NTYyNSAxNy43ODEyNSAwLjc2NTYyNSBDIDEzLjY3NTc4MSAwLjc2NTYyNSAxMC41IC0wLjE3NTc4MSA4LjI1IC0yLjA2MjUgQyA2LjAwNzgxMiAtMy45NDUzMTIgNC44OTA2MjUgLTYuNDkyMTg4IDQuODkwNjI1IC05LjcwMzEyNSBDIDQuODkwNjI1IC0xMy4wMzUxNTYgNC44OTA2MjUgLTE2LjM2MzI4MSA0Ljg5MDYyNSAtMTkuNjg3NSBDIDQuODkwNjI1IC0yMy4wMDc4MTIgNC44OTA2MjUgLTI2LjMzNTkzOCA0Ljg5MDYyNSAtMjkuNjcxODc1IEMgNC44OTA2MjUgLTMyLjI4NTE1NiA0LjcxMDkzOCAtMzQuMzEyNSA0LjM1OTM3NSAtMzUuNzUgQyA0LjAxNTYyNSAtMzcuMTg3NSAzLjIwMzEyNSAtMzcuOTkyMTg4IDEuOTIxODc1IC0zOC4xNzE4NzUgWiBNIDEuOTIxODc1IC0zOC40ODQzNzUgIi8+PC9nPjwvZz48L2c+PGcgZmlsbD0iI2Q3Y2JjNCIgZmlsbC1vcGFjaXR5PSIxIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2MTcuNjI2NTU0LCA5OTcuNTA2MTEpIj48Zz48cGF0aCBkPSJNIDAuNzY1NjI1IC0wLjMxMjUgQyAxLjY5MTQwNiAtMC40NTcwMzEgMi42Mjg5MDYgLTAuOTEwMTU2IDMuNTc4MTI1IC0xLjY3MTg3NSBDIDQuNTIzNDM4IC0yLjQyOTY4OCA1LjQ2MDkzOCAtMy40MTAxNTYgNi4zOTA2MjUgLTQuNjA5Mzc1IEMgNy4zMTY0MDYgLTUuODE2NDA2IDguMjE4NzUgLTcuMTYwMTU2IDkuMDkzNzUgLTguNjQwNjI1IEMgOS45NzY1NjIgLTEwLjExNzE4OCAxMC44NDc2NTYgLTExLjY0ODQzOCAxMS43MDMxMjUgLTEzLjIzNDM3NSBDIDEyLjg1OTM3NSAtMTUuNDIxODc1IDEzLjY3NTc4MSAtMTYuOTM3NSAxNC4xNTYyNSAtMTcuNzgxMjUgQyAxNC4wMzEyNSAtMTguMDYyNSAxMy44OTg0MzggLTE4LjMyMDMxMiAxMy43NjU2MjUgLTE4LjU2MjUgQyAxMy42NDA2MjUgLTE4LjgxMjUgMTMuNTMxMjUgLTE5LjAzNTE1NiAxMy40Mzc1IC0xOS4yMzQzNzUgQyAxMy40Mzc1IC0xOS4yMzQzNzUgMTMuNDUzMTI1IC0xOS4xOTUzMTIgMTMuNDg0Mzc1IC0xOS4xMjUgQyAxMy41MjM0MzggLTE5LjA1MDc4MSAxMy41MzEyNSAtMTkuMDM5MDYyIDEzLjUgLTE5LjA5Mzc1IEMgMTMuNDc2NTYyIC0xOS4xNDQ1MzEgMTMuMzY3MTg4IC0xOS4zNTE1NjIgMTMuMTcxODc1IC0xOS43MTg3NSBDIDEyLjk4NDM3NSAtMjAuMDkzNzUgMTIuNjU2MjUgLTIwLjcxMDkzOCAxMi4xODc1IC0yMS41NzgxMjUgQyAxMS43MjY1NjIgLTIyLjQ1MzEyNSAxMS4wOTM3NSAtMjMuNjc1NzgxIDEwLjI4MTI1IC0yNS4yNSBDIDkuNDI1NzgxIC0yNi44MzIwMzEgOC42MDkzNzUgLTI4LjM2NzE4OCA3LjgyODEyNSAtMjkuODU5Mzc1IEMgNy4wNDY4NzUgLTMxLjM0NzY1NiA2LjI2NTYyNSAtMzIuNjk1MzEyIDUuNDg0Mzc1IC0zMy45MDYyNSBDIDQuNzAzMTI1IC0zNS4xMTMyODEgMy45MjU3ODEgLTM2LjA5Mzc1IDMuMTU2MjUgLTM2Ljg0Mzc1IEMgMi4zODI4MTIgLTM3LjYwMTU2MiAxLjU4NTkzOCAtMzguMDQ2ODc1IDAuNzY1NjI1IC0zOC4xNzE4NzUgTCAwLjc2NTYyNSAtMzguNDg0Mzc1IEwgMTIuODU5Mzc1IC0zOC40ODQzNzUgTCAxMi44NTkzNzUgLTM4LjE3MTg3NSBDIDEyLjM5MDYyNSAtMzguMDk3NjU2IDExLjk0NTMxMiAtMzcuOTA2MjUgMTEuNTMxMjUgLTM3LjU5Mzc1IEMgMTEuMTI1IC0zNy4yODkwNjIgMTAuOTIxODc1IC0zNi44MDQ2ODggMTAuOTIxODc1IC0zNi4xNDA2MjUgQyAxMC45MjE4NzUgLTM1LjQ5MjE4OCAxMS4xMzI4MTIgLTM0LjYyNSAxMS41NjI1IC0zMy41MzEyNSBDIDExLjk4ODI4MSAtMzIuNDQ1MzEyIDEyLjUzNTE1NiAtMzEuMjM4MjgxIDEzLjIwMzEyNSAtMjkuOTA2MjUgQyAxMy44NjcxODggLTI4LjU3MDMxMiAxNC41NzAzMTIgLTI3LjIyMjY1NiAxNS4zMTI1IC0yNS44NTkzNzUgQyAxNi4wNjI1IC0yNC41MDM5MDYgMTYuNzUzOTA2IC0yMy4yMzQzNzUgMTcuMzkwNjI1IC0yMi4wNDY4NzUgQyAxOC4wMDM5MDYgLTIzLjIzNDM3NSAxOC42Nzk2ODggLTI0LjUwMzkwNiAxOS40MjE4NzUgLTI1Ljg1OTM3NSBDIDIwLjE3MTg3NSAtMjcuMjIyNjU2IDIwLjg3ODkwNiAtMjguNTcwMzEyIDIxLjU0Njg3NSAtMjkuOTA2MjUgQyAyMi4yMTA5MzggLTMxLjIzODI4MSAyMi43NTc4MTIgLTMyLjQ0NTMxMiAyMy4xODc1IC0zMy41MzEyNSBDIDIzLjYxMzI4MSAtMzQuNjI1IDIzLjgyODEyNSAtMzUuNDkyMTg4IDIzLjgyODEyNSAtMzYuMTQwNjI1IEMgMjMuODI4MTI1IC0zNi41OTc2NTYgMjMuNjc1NzgxIC0zNi45NjA5MzggMjMuMzc1IC0zNy4yMzQzNzUgQyAyMy4wODIwMzEgLTM3LjUwMzkwNiAyMi43MzgyODEgLTM3LjcxMDkzOCAyMi4zNDM3NSAtMzcuODU5Mzc1IEMgMjEuOTQ1MzEyIC0zOC4wMTU2MjUgMjEuNTkzNzUgLTM4LjExNzE4OCAyMS4yODEyNSAtMzguMTcxODc1IEwgMjEuMjgxMjUgLTM4LjQ4NDM3NSBMIDMxLjUxNTYyNSAtMzguNDg0Mzc1IEwgMzEuNTE1NjI1IC0zOC4xNzE4NzUgQyAzMC41OTc2NTYgLTM4LjAyMzQzOCAyOS42NjAxNTYgLTM3LjU3MDMxMiAyOC43MDMxMjUgLTM2LjgxMjUgQyAyNy43NTM5MDYgLTM2LjA1MDc4MSAyNi44MTY0MDYgLTM1LjA2NjQwNiAyNS44OTA2MjUgLTMzLjg1OTM3NSBDIDI0Ljk3MjY1NiAtMzIuNjYwMTU2IDI0LjA3MDMxMiAtMzEuMzIwMzEyIDIzLjE4NzUgLTI5Ljg0Mzc1IEMgMjIuMzAwNzgxIC0yOC4zNjMyODEgMjEuNDM3NSAtMjYuODMyMDMxIDIwLjU5Mzc1IC0yNS4yNSBDIDE5LjQzNzUgLTIzLjA2MjUgMTguNjEzMjgxIC0yMS41NDY4NzUgMTguMTI1IC0yMC43MDMxMjUgQyAxOC4yNSAtMjAuNDQxNDA2IDE4LjM3NSAtMjAuMTc5Njg4IDE4LjUgLTE5LjkyMTg3NSBDIDE4LjYzMjgxMiAtMTkuNjcxODc1IDE4Ljc1MzkwNiAtMTkuNDQxNDA2IDE4Ljg1OTM3NSAtMTkuMjM0Mzc1IEMgMTguODU5Mzc1IC0xOS4yMzQzNzUgMTguODM1OTM4IC0xOS4yNjk1MzEgMTguNzk2ODc1IC0xOS4zNDM3NSBDIDE4Ljc1MzkwNiAtMTkuNDI1NzgxIDE4Ljc0MjE4OCAtMTkuNDQxNDA2IDE4Ljc2NTYyNSAtMTkuMzkwNjI1IEMgMTguNzk2ODc1IC0xOS4zMzU5MzggMTguOTA2MjUgLTE5LjEyNSAxOS4wOTM3NSAtMTguNzUgQyAxOS4yODkwNjIgLTE4LjM4MjgxMiAxOS42MTcxODggLTE3Ljc2NTYyNSAyMC4wNzgxMjUgLTE2Ljg5MDYyNSBDIDIwLjU0Njg3NSAtMTYuMDIzNDM4IDIxLjE5MTQwNiAtMTQuODA0Njg4IDIyLjAxNTYyNSAtMTMuMjM0Mzc1IEMgMjIuODU5Mzc1IC0xMS42NDg0MzggMjMuNjcxODc1IC0xMC4xMTMyODEgMjQuNDUzMTI1IC04LjYyNSBDIDI1LjIzNDM3NSAtNy4xMzI4MTIgMjYuMDE1NjI1IC01Ljc4NTE1NiAyNi43OTY4NzUgLTQuNTc4MTI1IEMgMjcuNTg1OTM4IC0zLjM2NzE4OCAyOC4zNzUgLTIuMzgyODEyIDI5LjE1NjI1IC0xLjYyNSBDIDI5LjkzNzUgLTAuODc1IDMwLjcyMjY1NiAtMC40Mzc1IDMxLjUxNTYyNSAtMC4zMTI1IEwgMzEuNTE1NjI1IDAgTCAxOS40Mzc1IDAgTCAxOS40Mzc1IC0wLjMxMjUgQyAxOS44OTQ1MzEgLTAuMzgyODEyIDIwLjMyODEyNSAtMC41NzAzMTIgMjAuNzM0Mzc1IC0wLjg3NSBDIDIxLjE0ODQzOCAtMS4xODc1IDIxLjM1OTM3NSAtMS42NzU3ODEgMjEuMzU5Mzc1IC0yLjM0Mzc1IEMgMjEuMzU5Mzc1IC0yLjk4ODI4MSAyMS4xNDQ1MzEgLTMuODUxNTYyIDIwLjcxODc1IC00LjkzNzUgQyAyMC4zMDA3ODEgLTYuMDMxMjUgMTkuNzU3ODEyIC03LjI0MjE4OCAxOS4wOTM3NSAtOC41NzgxMjUgQyAxOC40MjU3ODEgLTkuOTEwMTU2IDE3LjcxODc1IC0xMS4yNTM5MDYgMTYuOTY4NzUgLTEyLjYwOTM3NSBDIDE2LjIyNjU2MiAtMTMuOTcyNjU2IDE1LjUzNTE1NiAtMTUuMjUgMTQuODkwNjI1IC0xNi40Mzc1IEMgMTQuMjczNDM4IC0xNS4yNSAxMy41OTM3NSAtMTMuOTcyNjU2IDEyLjg0Mzc1IC0xMi42MDkzNzUgQyAxMi4xMDE1NjIgLTExLjI1MzkwNiAxMS4zOTg0MzggLTkuOTEwMTU2IDEwLjczNDM3NSAtOC41NzgxMjUgQyAxMC4wNjY0MDYgLTcuMjQyMTg4IDkuNTE5NTMxIC02LjAzMTI1IDkuMDkzNzUgLTQuOTM3NSBDIDguNjc1NzgxIC0zLjg1MTU2MiA4LjQ2ODc1IC0yLjk4ODI4MSA4LjQ2ODc1IC0yLjM0Mzc1IEMgOC40Njg3NSAtMS45MDYyNSA4LjYxMzI4MSAtMS41NDY4NzUgOC45MDYyNSAtMS4yNjU2MjUgQyA5LjIwNzAzMSAtMC45ODQzNzUgOS41NTQ2ODggLTAuNzY1NjI1IDkuOTUzMTI1IC0wLjYwOTM3NSBDIDEwLjM0NzY1NiAtMC40NjA5MzggMTAuNjk1MzEyIC0wLjM2MzI4MSAxMSAtMC4zMTI1IEwgMTEgMCBMIDAuNzY1NjI1IDAgWiBNIDAuNzY1NjI1IC0wLjMxMjUgIi8+PC9nPjwvZz48L2c+PGcgZmlsbD0iI2Q3Y2JjNCIgZmlsbC1vcGFjaXR5PSIxIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2ODAuNjkyODMyLCA5OTcuNTA2MTEpIj48Zz48cGF0aCBkPSJNIDEuOTIxODc1IDAgTCAxLjkyMTg3NSAtMC4zMTI1IEMgMy4yMDMxMjUgLTAuNTA3ODEyIDQuMDE1NjI1IC0xLjMyMDMxMiA0LjM1OTM3NSAtMi43NSBDIDQuNzEwOTM4IC00LjE3NTc4MSA0Ljg5MDYyNSAtNi4xOTUzMTIgNC44OTA2MjUgLTguODEyNSBDIDQuODkwNjI1IC0xMi4zMDA3ODEgNC44OTA2MjUgLTE1Ljc3MzQzOCA0Ljg5MDYyNSAtMTkuMjM0Mzc1IEMgNC44OTA2MjUgLTIyLjcwMzEyNSA0Ljg5MDYyNSAtMjYuMTc5Njg4IDQuODkwNjI1IC0yOS42NzE4NzUgQyA0Ljg5MDYyNSAtMzIuMjg1MTU2IDQuNzEwOTM4IC0zNC4zMTI1IDQuMzU5Mzc1IC0zNS43NSBDIDQuMDE1NjI1IC0zNy4xODc1IDMuMjAzMTI1IC0zNy45OTIxODggMS45MjE4NzUgLTM4LjE3MTg3NSBMIDEuOTIxODc1IC0zOC40ODQzNzUgTCAxMi41NDY4NzUgLTM4LjQ4NDM3NSBMIDEyLjU0Njg3NSAtMzguMTcxODc1IEMgMTEuMjY1NjI1IC0zNy45OTIxODggMTAuNDQ1MzEyIC0zNy4xODc1IDEwLjA5Mzc1IC0zNS43NSBDIDkuNzUgLTM0LjMxMjUgOS41NzgxMjUgLTMyLjI4NTE1NiA5LjU3ODEyNSAtMjkuNjcxODc1IEMgOS41NzgxMjUgLTI2LjE3OTY4OCA5LjU3ODEyNSAtMjIuNzAzMTI1IDkuNTc4MTI1IC0xOS4yMzQzNzUgQyA5LjU3ODEyNSAtMTUuNzczNDM4IDkuNTc4MTI1IC0xMi4zMDA3ODEgOS41NzgxMjUgLTguODEyNSBDIDkuNTc4MTI1IC02LjE5NTMxMiA5Ljc1IC00LjE3NTc4MSAxMC4wOTM3NSAtMi43NSBDIDEwLjQ0NTMxMiAtMS4zMjAzMTIgMTEuMjY1NjI1IC0wLjUwNzgxMiAxMi41NDY4NzUgLTAuMzEyNSBMIDEyLjU0Njg3NSAwIFogTSAxLjkyMTg3NSAwICIvPjwvZz48L2c+PC9nPjxnIGZpbGw9IiNkN2NiYzQiIGZpbGwtb3BhY2l0eT0iMSI+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNzI1Ljk0NjI0NywgOTk3LjUwNjExKSI+PGc+PHBhdGggZD0iTSAxMi4xNTYyNSAwIEwgMC43NjU2MjUgMCBMIDAuNzY1NjI1IC0wLjMxMjUgQyAyLjMzNTkzOCAtMC41MzkwNjIgMy42NDQ1MzEgLTEuNTU0Njg4IDQuNjg3NSAtMy4zNTkzNzUgQyA1LjczODI4MSAtNS4xNzE4NzUgNi44NjcxODggLTcuNzU3ODEyIDguMDc4MTI1IC0xMS4xMjUgQyA4LjQ2MDkzOCAtMTIuMTc1NzgxIDguOTI5Njg4IC0xMy40NjA5MzggOS40ODQzNzUgLTE0Ljk4NDM3NSBDIDEwLjAzNTE1NiAtMTYuNTE1NjI1IDEwLjY0NDUzMSAtMTguMTY0MDYyIDExLjMxMjUgLTE5LjkzNzUgQyAxMS45NzY1NjIgLTIxLjcwNzAzMSAxMi42NDQ1MzEgLTIzLjQ5MjE4OCAxMy4zMTI1IC0yNS4yOTY4NzUgQyAxMy45NzY1NjIgLTI3LjEwOTM3NSAxNC42MjUgLTI4Ljg0NzY1NiAxNS4yNSAtMzAuNTE1NjI1IEMgMTUuODgyODEyIC0zMi4xNzk2ODggMTYuNDUzMTI1IC0zMy42NjQwNjIgMTYuOTUzMTI1IC0zNC45Njg3NSBDIDE3LjQ1MzEyNSAtMzYuMjgxMjUgMTcuODQzNzUgLTM3LjMyMDMxMiAxOC4xMjUgLTM4LjA5Mzc1IEMgMTguNDA2MjUgLTM4Ljg2MzI4MSAxOC41NDY4NzUgLTM5LjI1IDE4LjU0Njg3NSAtMzkuMjUgTCAxOC44NTkzNzUgLTM5LjI1IEMgMTguODU5Mzc1IC0zOS4yNSAxOS4wMDM5MDYgLTM4Ljg2MzI4MSAxOS4yOTY4NzUgLTM4LjA5Mzc1IEMgMTkuNTk3NjU2IC0zNy4zMjAzMTIgMjAgLTM2LjI4MTI1IDIwLjUgLTM0Ljk2ODc1IEMgMjEgLTMzLjY2NDA2MiAyMS41NjY0MDYgLTMyLjE3OTY4OCAyMi4yMDMxMjUgLTMwLjUxNTYyNSBDIDIyLjg0NzY1NiAtMjguODQ3NjU2IDIzLjUxNTYyNSAtMjcuMTAxNTYyIDI0LjIwMzEyNSAtMjUuMjgxMjUgQyAyNC44OTg0MzggLTIzLjQ1NzAzMSAyNS41ODU5MzggLTIxLjY2NDA2MiAyNi4yNjU2MjUgLTE5LjkwNjI1IEMgMjYuOTQxNDA2IC0xOC4xNTYyNSAyNy41NjI1IC0xNi41MTU2MjUgMjguMTI1IC0xNC45ODQzNzUgQyAyOC42OTUzMTIgLTEzLjQ2MDkzOCAyOS4xNzU3ODEgLTEyLjE3NTc4MSAyOS41NjI1IC0xMS4xMjUgQyAzMC40NTcwMzEgLTguNzA3MDMxIDMxLjI1IC02LjcyMjY1NiAzMS45Mzc1IC01LjE3MTg3NSBDIDMyLjYzMjgxMiAtMy42MTcxODggMzMuMzQ3NjU2IC0yLjQ1NzAzMSAzNC4wNzgxMjUgLTEuNjg3NSBDIDM0LjgwNDY4OCAtMC45MTQwNjIgMzUuNjYwMTU2IC0wLjQ1NzAzMSAzNi42NDA2MjUgLTAuMzEyNSBMIDM2LjY0MDYyNSAwIEwgMjQuNTkzNzUgMCBMIDI0LjU5Mzc1IC0wLjMxMjUgQyAyNS40ODgyODEgLTAuMzMyMDMxIDI2LjExNzE4OCAtMC41NjY0MDYgMjYuNDg0Mzc1IC0xLjAxNTYyNSBDIDI2Ljg1OTM3NSAtMS40NjA5MzggMjcuMDM1MTU2IC0yLjA1MDc4MSAyNy4wMTU2MjUgLTIuNzgxMjUgQyAyNi45OTIxODggLTMuNTE5NTMxIDI2LjgzMjAzMSAtNC4zNDc2NTYgMjYuNTMxMjUgLTUuMjY1NjI1IEMgMjYuMjM4MjgxIC02LjE5MTQwNiAyNS44ODI4MTIgLTcuMTQwNjI1IDI1LjQ2ODc1IC04LjEwOTM3NSBDIDI1LjA2MjUgLTkuMDg1OTM4IDI0LjY2NDA2MiAtMTAuMDM5MDYyIDI0LjI4MTI1IC0xMC45Njg3NSBDIDI0LjIyNjU2MiAtMTEuMDkzNzUgMjQuMTc1NzgxIC0xMS4yMTg3NSAyNC4xMjUgLTExLjM0Mzc1IEMgMjQuMDcwMzEyIC0xMS40NzY1NjIgMjQuMDE5NTMxIC0xMS42MDkzNzUgMjMuOTY4NzUgLTExLjczNDM3NSBMIDkuNzAzMTI1IC0xMS43MzQzNzUgTCA5LjQyMTg3NSAtMTEgQyA4Ljk5MjE4OCAtOS44MjAzMTIgOC42ODc1IC04LjYyNSA4LjUgLTcuNDA2MjUgQyA4LjMyMDMxMiAtNi4xODc1IDguMzEyNSAtNS4wNTA3ODEgOC40Njg3NSAtNCBDIDguNjI1IC0yLjk0NTMxMiA5IC0yLjA5Mzc1IDkuNTkzNzUgLTEuNDM3NSBDIDEwLjE5NTMxMiAtMC43ODkwNjIgMTEuMDUwNzgxIC0wLjQ1MzEyNSAxMi4xNTYyNSAtMC40MjE4NzUgWiBNIDEwLjEyNSAtMTIuODkwNjI1IEwgMjMuNTQ2ODc1IC0xMi44OTA2MjUgQyAyMy40NTMxMjUgLTEzLjE3MTg3NSAyMy4zNDM3NSAtMTMuNDU3MDMxIDIzLjIxODc1IC0xMy43NSBDIDIzLjEwMTU2MiAtMTQuMDUwNzgxIDIyLjk5MjE4OCAtMTQuMzI4MTI1IDIyLjg5MDYyNSAtMTQuNTc4MTI1IEMgMjIuMzU5Mzc1IC0xNi4wNDY4NzUgMjEuODAwNzgxIC0xNy41NjI1IDIxLjIxODc1IC0xOS4xMjUgQyAyMC42NDQ1MzEgLTIwLjY4NzUgMjAuMDg1OTM4IC0yMi4xODc1IDE5LjU0Njg3NSAtMjMuNjI1IEMgMTkuMDAzOTA2IC0yNS4wNjI1IDE4LjUxNTYyNSAtMjYuMzQ3NjU2IDE4LjA3ODEyNSAtMjcuNDg0Mzc1IEMgMTcuNjQ4NDM4IC0yOC42Mjg5MDYgMTcuMzA0Njg4IC0yOS41MzkwNjIgMTcuMDQ2ODc1IC0zMC4yMTg3NSBDIDE2Ljc4NTE1NiAtMzAuOTA2MjUgMTYuNjU2MjUgLTMxLjI1IDE2LjY1NjI1IC0zMS4yNSBaIE0gMTAuMTI1IC0xMi44OTA2MjUgIi8+PC9nPjwvZz48L2c+PGcgZmlsbD0iI2Q3Y2JjNCIgZmlsbC1vcGFjaXR5PSIxIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg3OTQuMTM5Mjg3LCA5OTcuNTA2MTEpIj48Zy8+PC9nPjwvZz48ZyBmaWxsPSIjZDdjYmM0IiBmaWxsLW9wYWNpdHk9IjEiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDg0MC4zMTYwNDUsIDk5Ny41MDYxMSkiPjxnLz48L2c+PC9nPjxnIGZpbGw9IiNkN2NiYzQiIGZpbGwtb3BhY2l0eT0iMSI+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoODg2LjQ5NDc0NCwgOTk3LjUwNjExKSI+PGc+PHBhdGggZD0iTSAxLjkyMTg3NSAtMzguNDg0Mzc1IEwgMTIuNTQ2ODc1IC0zOC40ODQzNzUgTCAxMi41NDY4NzUgLTM4LjE3MTg3NSBDIDExLjI2NTYyNSAtMzcuOTkyMTg4IDEwLjQ0NTMxMiAtMzcuMTg3NSAxMC4wOTM3NSAtMzUuNzUgQyA5Ljc1IC0zNC4zMTI1IDkuNTc4MTI1IC0zMi4yODUxNTYgOS41NzgxMjUgLTI5LjY3MTg3NSBDIDkuNTc4MTI1IC0yNi4zMDQ2ODggOS41NzgxMjUgLTIyLjk0MTQwNiA5LjU3ODEyNSAtMTkuNTc4MTI1IEMgOS41NzgxMjUgLTE2LjIyMjY1NiA5LjU3ODEyNSAtMTIuODYzMjgxIDkuNTc4MTI1IC05LjUgQyA5LjU3ODEyNSAtNy44NjMyODEgOS44MjgxMjUgLTYuNDY4NzUgMTAuMzI4MTI1IC01LjMxMjUgQyAxMC44MjgxMjUgLTQuMTU2MjUgMTEuNDg0Mzc1IC0zLjIxMDkzOCAxMi4yOTY4NzUgLTIuNDg0Mzc1IEMgMTMuMTA5Mzc1IC0xLjc1MzkwNiAxMy45ODgyODEgLTEuMjIyNjU2IDE0LjkzNzUgLTAuODkwNjI1IEMgMTUuODgyODEyIC0wLjU1NDY4OCAxNi44MDQ2ODggLTAuMzkwNjI1IDE3LjcwMzEyNSAtMC4zOTA2MjUgQyAxOC41OTc2NTYgLTAuMzkwNjI1IDE5LjUxOTUzMSAtMC41NTQ2ODggMjAuNDY4NzUgLTAuODkwNjI1IEMgMjEuNDE0MDYyIC0xLjIyMjY1NiAyMi4yOTY4NzUgLTEuNzUzOTA2IDIzLjEwOTM3NSAtMi40ODQzNzUgQyAyMy45MjE4NzUgLTMuMjEwOTM4IDI0LjU3ODEyNSAtNC4xNTYyNSAyNS4wNzgxMjUgLTUuMzEyNSBDIDI1LjU3ODEyNSAtNi40Njg3NSAyNS44MjgxMjUgLTcuODYzMjgxIDI1LjgyODEyNSAtOS41IEMgMjUuODI4MTI1IC0xMi44NjMyODEgMjUuODI4MTI1IC0xNi4yMjI2NTYgMjUuODI4MTI1IC0xOS41NzgxMjUgQyAyNS44MjgxMjUgLTIyLjk0MTQwNiAyNS44MjgxMjUgLTI2LjMwNDY4OCAyNS44MjgxMjUgLTI5LjY3MTg3NSBDIDI1LjgyODEyNSAtMzIuMjg1MTU2IDI1LjY0ODQzOCAtMzQuMzEyNSAyNS4yOTY4NzUgLTM1Ljc1IEMgMjQuOTUzMTI1IC0zNy4xODc1IDI0LjE0MDYyNSAtMzcuOTkyMTg4IDIyLjg1OTM3NSAtMzguMTcxODc1IEwgMjIuODU5Mzc1IC0zOC40ODQzNzUgTCAzMy40ODQzNzUgLTM4LjQ4NDM3NSBMIDMzLjQ4NDM3NSAtMzguMTcxODc1IEMgMzIuMjAzMTI1IC0zNy45OTIxODggMzEuMzgyODEyIC0zNy4xODc1IDMxLjAzMTI1IC0zNS43NSBDIDMwLjY4NzUgLTM0LjMxMjUgMzAuNTE1NjI1IC0zMi4yODUxNTYgMzAuNTE1NjI1IC0yOS42NzE4NzUgQyAzMC41MTU2MjUgLTI2LjMzNTkzOCAzMC41MTU2MjUgLTIzLjAwNzgxMiAzMC41MTU2MjUgLTE5LjY4NzUgQyAzMC41MTU2MjUgLTE2LjM2MzI4MSAzMC41MTU2MjUgLTEzLjAzNTE1NiAzMC41MTU2MjUgLTkuNzAzMTI1IEMgMzAuNTE1NjI1IC03LjU2NjQwNiAzMC4wMTU2MjUgLTUuNzA3MDMxIDI5LjAxNTYyNSAtNC4xMjUgQyAyOC4wMTU2MjUgLTIuNTUwNzgxIDI2LjU2NjQwNiAtMS4zNDM3NSAyNC42NzE4NzUgLTAuNSBDIDIyLjc3MzQzOCAwLjM0Mzc1IDIwLjQ3NjU2MiAwLjc2NTYyNSAxNy43ODEyNSAwLjc2NTYyNSBDIDEzLjY3NTc4MSAwLjc2NTYyNSAxMC41IC0wLjE3NTc4MSA4LjI1IC0yLjA2MjUgQyA2LjAwNzgxMiAtMy45NDUzMTIgNC44OTA2MjUgLTYuNDkyMTg4IDQuODkwNjI1IC05LjcwMzEyNSBDIDQuODkwNjI1IC0xMy4wMzUxNTYgNC44OTA2MjUgLTE2LjM2MzI4MSA0Ljg5MDYyNSAtMTkuNjg3NSBDIDQuODkwNjI1IC0yMy4wMDc4MTIgNC44OTA2MjUgLTI2LjMzNTkzOCA0Ljg5MDYyNSAtMjkuNjcxODc1IEMgNC44OTA2MjUgLTMyLjI4NTE1NiA0LjcxMDkzOCAtMzQuMzEyNSA0LjM1OTM3NSAtMzUuNzUgQyA0LjAxNTYyNSAtMzcuMTg3NSAzLjIwMzEyNSAtMzcuOTkyMTg4IDEuOTIxODc1IC0zOC4xNzE4NzUgWiBNIDEuOTIxODc1IC0zOC40ODQzNzUgIi8+PC9nPjwvZz48L2c+PGcgZmlsbD0iI2Q3Y2JjNCIgZmlsbC1vcGFjaXR5PSIxIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg5NTIuNjc3MzA2LCA5OTcuNTA2MTEpIj48Zz48cGF0aCBkPSJNIDEuOTIxODc1IC0wLjMxMjUgQyAzLjIwMzEyNSAtMC41MDc4MTIgNC4wMTU2MjUgLTEuMzIwMzEyIDQuMzU5Mzc1IC0yLjc1IEMgNC43MTA5MzggLTQuMTc1NzgxIDQuODkwNjI1IC02LjE5NTMxMiA0Ljg5MDYyNSAtOC44MTI1IEMgNC44OTA2MjUgLTEyLjMwMDc4MSA0Ljg5MDYyNSAtMTUuNzczNDM4IDQuODkwNjI1IC0xOS4yMzQzNzUgQyA0Ljg5MDYyNSAtMjIuNzAzMTI1IDQuODkwNjI1IC0yNi4xNzk2ODggNC44OTA2MjUgLTI5LjY3MTg3NSBDIDQuODkwNjI1IC0zMi4yODUxNTYgNC43MTA5MzggLTM0LjMxMjUgNC4zNTkzNzUgLTM1Ljc1IEMgNC4wMTU2MjUgLTM3LjE4NzUgMy4yMDMxMjUgLTM3Ljk5MjE4OCAxLjkyMTg3NSAtMzguMTcxODc1IEwgMS45MjE4NzUgLTM4LjQ4NDM3NSBMIDkuMDc4MTI1IC0zOC40ODQzNzUgTCAyMC4zOTA2MjUgLTExLjEyNSBMIDMwLjE0MDYyNSAtMzguNDg0Mzc1IEwgMzcuNzk2ODc1IC0zOC40ODQzNzUgTCAzNy43OTY4NzUgLTM4LjE3MTg3NSBDIDM2LjUxNTYyNSAtMzcuOTkyMTg4IDM1LjY5NTMxMiAtMzcuMTg3NSAzNS4zNDM3NSAtMzUuNzUgQyAzNSAtMzQuMzEyNSAzNC44MjgxMjUgLTMyLjI4NTE1NiAzNC44MjgxMjUgLTI5LjY3MTg3NSBDIDM0LjgyODEyNSAtMjYuMTc5Njg4IDM0LjgyODEyNSAtMjIuNzAzMTI1IDM0LjgyODEyNSAtMTkuMjM0Mzc1IEMgMzQuODI4MTI1IC0xNS43NzM0MzggMzQuODI4MTI1IC0xMi4zMDA3ODEgMzQuODI4MTI1IC04LjgxMjUgQyAzNC44MjgxMjUgLTYuMTk1MzEyIDM1IC00LjE3NTc4MSAzNS4zNDM3NSAtMi43NSBDIDM1LjY5NTMxMiAtMS4zMjAzMTIgMzYuNTE1NjI1IC0wLjUwNzgxMiAzNy43OTY4NzUgLTAuMzEyNSBMIDM3Ljc5Njg3NSAwIEwgMjcuMTcxODc1IDAgTCAyNy4xNzE4NzUgLTAuMzEyNSBDIDI4LjQ1MzEyNSAtMC41MDc4MTIgMjkuMjY1NjI1IC0xLjMyMDMxMiAyOS42MDkzNzUgLTIuNzUgQyAyOS45NjA5MzggLTQuMTc1NzgxIDMwLjE0MDYyNSAtNi4xOTUzMTIgMzAuMTQwNjI1IC04LjgxMjUgQyAzMC4xNDA2MjUgLTEzLjE5NTMxMiAzMC4xNDA2MjUgLTE3LjU3ODEyNSAzMC4xNDA2MjUgLTIxLjk1MzEyNSBDIDMwLjE0MDYyNSAtMjYuMzI4MTI1IDMwLjE0MDYyNSAtMzAuNzA3MDMxIDMwLjE0MDYyNSAtMzUuMDkzNzUgTCAxOC44NTkzNzUgLTMuODQzNzUgTCAxOC41NDY4NzUgLTMuODQzNzUgTCA2LjI2NTYyNSAtMzMuNTE1NjI1IEMgNi4yNjU2MjUgLTMyLjA1NDY4OCA2LjI1NzgxMiAtMzAuODU5Mzc1IDYuMjUgLTI5LjkyMTg3NSBDIDYuMjM4MjgxIC0yOC45ODQzNzUgNi4yMjY1NjIgLTI4LjIxMDkzOCA2LjIxODc1IC0yNy42MDkzNzUgQyA2LjIwNzAzMSAtMjcuMDAzOTA2IDYuMTkxNDA2IC0yNi40NTcwMzEgNi4xNzE4NzUgLTI1Ljk2ODc1IEMgNi4xNjAxNTYgLTI1LjQ4ODI4MSA2LjE0ODQzOCAtMjQuOTc2NTYyIDYuMTQwNjI1IC0yNC40Mzc1IEMgNi4xMjg5MDYgLTIzLjg5NDUzMSA2LjExMzI4MSAtMjMuMjEwOTM4IDYuMDkzNzUgLTIyLjM5MDYyNSBDIDYuMDgyMDMxIC0yMS41NzgxMjUgNi4wNzgxMjUgLTIwLjUyMzQzOCA2LjA3ODEyNSAtMTkuMjM0Mzc1IEMgNi4wNzgxMjUgLTE3Ljk1MzEyNSA2LjA3ODEyNSAtMTcgNi4wNzgxMjUgLTE2LjM3NSBDIDYuMDc4MTI1IC0xNS43NSA2LjA3ODEyNSAtMTUuMzA0Njg4IDYuMDc4MTI1IC0xNS4wNDY4NzUgQyA2LjA3ODEyNSAtMTQuNzg1MTU2IDYuMDgyMDMxIC0xNC41NzgxMjUgNi4wOTM3NSAtMTQuNDIxODc1IEMgNi4xMTMyODEgLTE0LjI3MzQzOCA2LjEyNSAtMTQuMDM5MDYyIDYuMTI1IC0xMy43MTg3NSBDIDYuMTI1IC0xMy4zOTQ1MzEgNi4xMjUgLTEyLjg1OTM3NSA2LjEyNSAtMTIuMTA5Mzc1IEMgNi4xMjUgLTExLjM2NzE4OCA2LjEyNSAtMTAuMjY5NTMxIDYuMTI1IC04LjgxMjUgQyA2LjEyNSAtNi4xOTUzMTIgNi4yOTY4NzUgLTQuMTc1NzgxIDYuNjQwNjI1IC0yLjc1IEMgNi45ODQzNzUgLTEuMzIwMzEyIDcuNzk2ODc1IC0wLjUwNzgxMiA5LjA3ODEyNSAtMC4zMTI1IEwgOS4wNzgxMjUgMCBMIDEuOTIxODc1IDAgWiBNIDEuOTIxODc1IC0wLjMxMjUgIi8+PC9nPjwvZz48L2c+PGcgZmlsbD0iI2Q3Y2JjNCIgZmlsbC1vcGFjaXR5PSIxIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMDIzLjE2ODgwOCwgOTk3LjUwNjExKSI+PGc+PHBhdGggZD0iTSA5LjA0Njg3NSAtMjcuMzU5Mzc1IEMgNy45MTAxNTYgLTI5LjQ2MDkzOCA2Ljg3NSAtMzEuMjk2ODc1IDUuOTM3NSAtMzIuODU5Mzc1IEMgNS4wMDc4MTIgLTM0LjQyOTY4OCA0LjEzMjgxMiAtMzUuNjc1NzgxIDMuMzEyNSAtMzYuNTkzNzUgQyAyLjQ4ODI4MSAtMzcuNTE5NTMxIDEuNjQwNjI1IC0zOC4wNDY4NzUgMC43NjU2MjUgLTM4LjE3MTg3NSBMIDAuNzY1NjI1IC0zOC40ODQzNzUgTCAxMi4yMzQzNzUgLTM4LjQ4NDM3NSBMIDEyLjIzNDM3NSAtMzguMTcxODc1IEMgMTEuNjcxODc1IC0zOC4wNjY0MDYgMTEuMTY0MDYyIC0zNy43OTY4NzUgMTAuNzE4NzUgLTM3LjM1OTM3NSBDIDEwLjI2OTUzMSAtMzYuOTI5Njg4IDEwLjA0Njg3NSAtMzYuMzk0NTMxIDEwLjA0Njg3NSAtMzUuNzUgQyAxMC4wNDY4NzUgLTM1LjMxMjUgMTAuMjY5NTMxIC0zNC41NzgxMjUgMTAuNzE4NzUgLTMzLjU0Njg3NSBDIDExLjE2NDA2MiAtMzIuNTIzNDM4IDExLjczNDM3NSAtMzEuMzQzNzUgMTIuNDIxODc1IC0zMCBDIDEzLjExNzE4OCAtMjguNjU2MjUgMTMuODYzMjgxIC0yNy4yNzM0MzggMTQuNjU2MjUgLTI1Ljg1OTM3NSBDIDE1LjQ1NzAzMSAtMjQuNDUzMTI1IDE2LjIwNzAzMSAtMjMuMTQwNjI1IDE2LjkwNjI1IC0yMS45MjE4NzUgQyAxNy42MTMyODEgLTIwLjcwMzEyNSAxOC4xODc1IC0xOS43MTg3NSAxOC42MjUgLTE4Ljk2ODc1IEMgMjAuMDM5MDYyIC0yMS42MTMyODEgMjEuMjM0Mzc1IC0yMy44MjgxMjUgMjIuMjAzMTI1IC0yNS42MDkzNzUgQyAyMy4xNzk2ODggLTI3LjM5MDYyNSAyMy45NzI2NTYgLTI4Ljg3NSAyNC41NzgxMjUgLTMwLjA2MjUgQyAyNS4xNzk2ODggLTMxLjI1NzgxMiAyNS42MTMyODEgLTMyLjI2NTYyNSAyNS44NzUgLTMzLjA3ODEyNSBDIDI2LjE0NDUzMSAtMzMuODkwNjI1IDI2LjI4MTI1IC0zNC42MTMyODEgMjYuMjgxMjUgLTM1LjI1IEMgMjYuMjgxMjUgLTM1LjU4MjAzMSAyNi4yMDMxMjUgLTM1Ljk1NzAzMSAyNi4wNDY4NzUgLTM2LjM3NSBDIDI1Ljg5ODQzOCAtMzYuODAwNzgxIDI1LjYwOTM3NSAtMzcuMTc5Njg4IDI1LjE3MTg3NSAtMzcuNTE1NjI1IEMgMjQuNzM0Mzc1IC0zNy44NDc2NTYgMjQuMTAxNTYyIC0zOC4wMzEyNSAyMy4yODEyNSAtMzguMDYyNSBMIDIzLjI4MTI1IC0zOC40ODQzNzUgTCAzMi44NTkzNzUgLTM4LjQ4NDM3NSBMIDMyLjg1OTM3NSAtMzguMTcxODc1IEMgMzIuMDE1NjI1IC0zOC4wNDY4NzUgMzEuMTc1NzgxIC0zNy41MTk1MzEgMzAuMzQzNzUgLTM2LjU5Mzc1IEMgMjkuNTA3ODEyIC0zNS42NzU3ODEgMjguNjI4OTA2IC0zNC40Mjk2ODggMjcuNzAzMTI1IC0zMi44NTkzNzUgQyAyNi43ODUxNTYgLTMxLjI5Njg3NSAyNS43NSAtMjkuNDYwOTM4IDI0LjU5Mzc1IC0yNy4zNTkzNzUgQyAyMi44NzUgLTI0LjIzNDM3NSAyMS41NDY4NzUgLTIxLjc4OTA2MiAyMC42MDkzNzUgLTIwLjAzMTI1IEMgMTkuNjcxODc1IC0xOC4yNjk1MzEgMTkuMjAzMTI1IC0xNy4zOTA2MjUgMTkuMjAzMTI1IC0xNy4zOTA2MjUgQyAxOS4yMDMxMjUgLTE2LjIzNDM3NSAxOS4yMDMxMjUgLTE1LjIwNzAzMSAxOS4yMDMxMjUgLTE0LjMxMjUgQyAxOS4yMDMxMjUgLTEzLjQxNDA2MiAxOS4xOTUzMTIgLTEyLjUzNTE1NiAxOS4xODc1IC0xMS42NzE4NzUgQyAxOS4xNzU3ODEgLTEwLjgxNjQwNiAxOS4xNzE4NzUgLTkuODYzMjgxIDE5LjE3MTg3NSAtOC44MTI1IEMgMTkuMTcxODc1IC02LjE5NTMxMiAxOS4zNDM3NSAtNC4xNzU3ODEgMTkuNjg3NSAtMi43NSBDIDIwLjAzMTI1IC0xLjMyMDMxMiAyMC44NDM3NSAtMC41MDc4MTIgMjIuMTI1IC0wLjMxMjUgTCAyMi4xMjUgMCBMIDExLjUgMCBMIDExLjUgLTAuMzEyNSBDIDEyLjc4OTA2MiAtMC41MDc4MTIgMTMuNjA5Mzc1IC0xLjMyMDMxMiAxMy45NTMxMjUgLTIuNzUgQyAxNC4yOTY4NzUgLTQuMTc1NzgxIDE0LjQ2ODc1IC02LjE5NTMxMiAxNC40Njg3NSAtOC44MTI1IEMgMTQuNDY4NzUgLTEwLjA3MDMxMiAxNC40Njg3NSAtMTEuMDIzNDM4IDE0LjQ2ODc1IC0xMS42NzE4NzUgQyAxNC40Njg3NSAtMTIuMzI4MTI1IDE0LjQ2ODc1IC0xMi43NzM0MzggMTQuNDY4NzUgLTEzLjAxNTYyNSBDIDE0LjQ2ODc1IC0xMy4yNjU2MjUgMTQuNDY4NzUgLTEzLjQxMDE1NiAxNC40Njg3NSAtMTMuNDUzMTI1IEMgMTQuNDY4NzUgLTEzLjQ5MjE4OCAxNC40NzI2NTYgLTEzLjUxOTUzMSAxNC40ODQzNzUgLTEzLjUzMTI1IEMgMTQuNTAzOTA2IC0xMy41MzkwNjIgMTQuNTE1NjI1IC0xMy42NDA2MjUgMTQuNTE1NjI1IC0xMy44MjgxMjUgQyAxNC41MTU2MjUgLTE0LjAyMzQzOCAxNC41MTU2MjUgLTE0LjM5MDYyNSAxNC41MTU2MjUgLTE0LjkyMTg3NSBDIDE0LjUxNTYyNSAtMTUuNDYwOTM4IDE0LjUxNTYyNSAtMTYuMjg1MTU2IDE0LjUxNTYyNSAtMTcuMzkwNjI1IEMgMTQuMjAzMTI1IC0xNy45Mjk2ODggMTMuOTEwMTU2IC0xOC40NDUzMTIgMTMuNjQwNjI1IC0xOC45Mzc1IEMgMTMuMzY3MTg4IC0xOS40MjU3ODEgMTMuMDQ2ODc1IC0yMC4wMDc4MTIgMTIuNjcxODc1IC0yMC42ODc1IEMgMTIuMzA0Njg4IC0yMS4zNjMyODEgMTEuODMyMDMxIC0yMi4yMjY1NjIgMTEuMjUgLTIzLjI4MTI1IEMgMTAuNjc1NzgxIC0yNC4zMzIwMzEgOS45NDE0MDYgLTI1LjY5MTQwNiA5LjA0Njg3NSAtMjcuMzU5Mzc1IFogTSA5LjA0Njg3NSAtMjcuMzU5Mzc1ICIvPjwvZz48L2c+PC9nPjxnIGNsaXAtcGF0aD0idXJsKCM2ZjhmYmFkYzgwKSI+PGcgY2xpcC1wYXRoPSJ1cmwoIzU0MGQ5NzQwNGUpIj48ZyBjbGlwLXBhdGg9InVybCgjNGU0MDA3YTE0OCkiPjxnIHRyYW5zZm9ybT0ibWF0cml4KDEsIDAsIDAsIDEsIDU1OCwgNDAwKSI+PGcgY2xpcC1wYXRoPSJ1cmwoIzI4NTdlMTFlNDUpIj48ZyBjbGlwLXBhdGg9InVybCgjYzgxNjhiZTlkOSkiPjxnIGNsaXAtcGF0aD0idXJsKCMyOWQ3YzAwZmU0KSI+PGcgY2xpcC1wYXRoPSJ1cmwoIzNiNmEwZDU3ZGQpIj48cGF0aCBmaWxsPSIjMDAwYjNkIiBkPSJNIC0xMzUuMjE4NzUgMzA0LjU3NDIxOSBMIDEzNi41MzUxNTYgLTk3LjUwNzgxMiBMIDUxOS4xODc1IDE2MS4xMDkzNzUgTCAyNDcuNDMzNTk0IDU2My4xOTUzMTIgWiBNIC0xMzUuMjE4NzUgMzA0LjU3NDIxOSAiIGZpbGwtb3BhY2l0eT0iMSIgZmlsbC1ydWxlPSJub256ZXJvIi8+PC9nPjwvZz48L2c+PC9nPjwvZz48L2c+PC9nPjwvZz48ZyB0cmFuc2Zvcm09Im1hdHJpeCgxLCAwLCAwLCAxLCA3MDcsIDQxNikiPjxnIGNsaXAtcGF0aD0idXJsKCMxNmZlZGFkMzA5KSI+PGcgZmlsbD0iI2E2YTZhNiIgZmlsbC1vcGFjaXR5PSIxIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgyLjcwODEzNywgMzE5LjMxNjEyMykiPjxnPjxwYXRoIGQ9Ik0gMTcuNjQwNjI1IC01LjI5Njg3NSBMIDIxLjg3NSAtNS4yOTY4NzUgQyAyNS4xNzU3ODEgLTUuNTIzNDM4IDI5IC02LjIyNjU2MiAzMy4zNDM3NSAtNy40MDYyNSBDIDM3LjY5NTMxMiAtOC41ODIwMzEgMzkuODc1IC0xMC43MDMxMjUgMzkuODc1IC0xMy43NjU2MjUgTCAzOS44NzUgLTIzNS43MzQzNzUgQyAzOS44NzUgLTIzNy44NTkzNzUgMzguNzUzOTA2IC0yMzkuNTY2NDA2IDM2LjUxNTYyNSAtMjQwLjg1OTM3NSBDIDM0LjI4NTE1NiAtMjQyLjE0ODQzOCAzMS42OTUzMTIgLTI0My4wMzEyNSAyOC43NSAtMjQzLjUgQyAyNS44MTI1IC0yNDMuOTc2NTYyIDIzLjIyMjY1NiAtMjQ0LjI3MzQzOCAyMC45ODQzNzUgLTI0NC4zOTA2MjUgQyAxOC43NTM5MDYgLTI0NC41MDM5MDYgMTcuNjQwNjI1IC0yNDQuNTYyNSAxNy42NDA2MjUgLTI0NC41NjI1IEwgMTcuNjQwNjI1IC0yNDkuNSBMIDc1LjE3MTg3NSAtMjQ5LjUgTCA3NS4xNzE4NzUgLTI0NC41NjI1IEMgNzUuMTcxODc1IC0yNDQuNTYyNSA3NC4wNTA3ODEgLTI0NC41MDM5MDYgNzEuODEyNSAtMjQ0LjM5MDYyNSBDIDY5LjU4MjAzMSAtMjQ0LjI3MzQzOCA2Ni45Mzc1IC0yNDMuOTc2NTYyIDYzLjg3NSAtMjQzLjUgQyA2MC44MTI1IC0yNDMuMDMxMjUgNTguMTYwMTU2IC0yNDIuMTQ4NDM4IDU1LjkyMTg3NSAtMjQwLjg1OTM3NSBDIDUzLjY5MTQwNiAtMjM5LjU2NjQwNiA1Mi41NzgxMjUgLTIzNy44NTkzNzUgNTIuNTc4MTI1IC0yMzUuNzM0Mzc1IEwgNTIuNTc4MTI1IC01LjI5Njg3NSBMIDE0My45ODQzNzUgLTUuMjk2ODc1IEMgMTQ3LjUxNTYyNSAtNS4yOTY4NzUgMTUwLjgwNDY4OCAtNi41ODU5MzggMTUzLjg1OTM3NSAtOS4xNzE4NzUgQyAxNTYuOTIxODc1IC0xMS43NjU2MjUgMTU5LjUwNzgxMiAtMTQuNDcyNjU2IDE2MS42MjUgLTE3LjI5Njg3NSBDIDE2My43NSAtMjAuMTE3MTg4IDE2NC45MjU3ODEgLTIxLjc2NTYyNSAxNjUuMTU2MjUgLTIyLjIzNDM3NSBMIDE2NS4xNTYyNSAtMjIuNTkzNzUgTCAxNzEuMTU2MjUgLTIyLjU5Mzc1IEwgMTU3LjM5MDYyNSAwIEwgMTcuNjQwNjI1IDAgWiBNIDE3LjY0MDYyNSAtNS4yOTY4NzUgIi8+PC9nPjwvZz48L2c+PC9nPjwvZz48ZyB0cmFuc2Zvcm09Im1hdHJpeCgxLCAwLCAwLCAxLCA2NTksIDQ3NCkiPjxnIGNsaXAtcGF0aD0idXJsKCNlNTk1NjE0YmYwKSI+PGcgZmlsbD0iI2Q3Y2JjNCIgZmlsbC1vcGFjaXR5PSIxIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzLjAyNzQxOCwgMzE4LjY4ODU5OCkiPjxnPjxwYXRoIGQ9Ik0gMTcuNjQwNjI1IC01LjI5Njg3NSBMIDIxLjg3NSAtNS4yOTY4NzUgQyAyNS4xNzU3ODEgLTUuNTIzNDM4IDI5IC02LjIyNjU2MiAzMy4zNDM3NSAtNy40MDYyNSBDIDM3LjY5NTMxMiAtOC41ODIwMzEgMzkuODc1IC0xMC43MDMxMjUgMzkuODc1IC0xMy43NjU2MjUgTCAzOS44NzUgLTIzNS43MzQzNzUgQyAzOS44NzUgLTIzNy44NTkzNzUgMzguNzUzOTA2IC0yMzkuNTY2NDA2IDM2LjUxNTYyNSAtMjQwLjg1OTM3NSBDIDM0LjI4NTE1NiAtMjQyLjE0ODQzOCAzMS42OTUzMTIgLTI0My4wMzEyNSAyOC43NSAtMjQzLjUgQyAyNS44MTI1IC0yNDMuOTc2NTYyIDIzLjIyMjY1NiAtMjQ0LjI3MzQzOCAyMC45ODQzNzUgLTI0NC4zOTA2MjUgQyAxOC43NTM5MDYgLTI0NC41MDM5MDYgMTcuNjQwNjI1IC0yNDQuNTYyNSAxNy42NDA2MjUgLTI0NC41NjI1IEwgMTcuNjQwNjI1IC0yNDkuNSBMIDc1LjE3MTg3NSAtMjQ5LjUgTCA3NS4xNzE4NzUgLTI0NC41NjI1IEMgNzUuMTcxODc1IC0yNDQuNTYyNSA3NC4wNTA3ODEgLTI0NC41MDM5MDYgNzEuODEyNSAtMjQ0LjM5MDYyNSBDIDY5LjU4MjAzMSAtMjQ0LjI3MzQzOCA2Ni45Mzc1IC0yNDMuOTc2NTYyIDYzLjg3NSAtMjQzLjUgQyA2MC44MTI1IC0yNDMuMDMxMjUgNTguMTYwMTU2IC0yNDIuMTQ4NDM4IDU1LjkyMTg3NSAtMjQwLjg1OTM3NSBDIDUzLjY5MTQwNiAtMjM5LjU2NjQwNiA1Mi41NzgxMjUgLTIzNy44NTkzNzUgNTIuNTc4MTI1IC0yMzUuNzM0Mzc1IEwgNTIuNTc4MTI1IC01LjI5Njg3NSBMIDE0My45ODQzNzUgLTUuMjk2ODc1IEMgMTQ3LjUxNTYyNSAtNS4yOTY4NzUgMTUwLjgwNDY4OCAtNi41ODU5MzggMTUzLjg1OTM3NSAtOS4xNzE4NzUgQyAxNTYuOTIxODc1IC0xMS43NjU2MjUgMTU5LjUwNzgxMiAtMTQuNDcyNjU2IDE2MS42MjUgLTE3LjI5Njg3NSBDIDE2My43NSAtMjAuMTE3MTg4IDE2NC45MjU3ODEgLTIxLjc2NTYyNSAxNjUuMTU2MjUgLTIyLjIzNDM3NSBMIDE2NS4xNTYyNSAtMjIuNTkzNzUgTCAxNzEuMTU2MjUgLTIyLjU5Mzc1IEwgMTU3LjM5MDYyNSAwIEwgMTcuNjQwNjI1IDAgWiBNIDE3LjY0MDYyNSAtNS4yOTY4NzUgIi8+PC9nPjwvZz48L2c+PC9nPjwvZz48ZyBmaWxsPSIjMDAwYjNkIiBmaWxsLW9wYWNpdHk9IjEiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDU1My4yNDY4NjMsIDk5Ni4yOTMzNDIpIj48Zz48cGF0aCBkPSJNIDEuOTIxODc1IC0zOC40ODQzNzUgTCAxMi41NDY4NzUgLTM4LjQ4NDM3NSBMIDEyLjU0Njg3NSAtMzguMTcxODc1IEMgMTEuMjY1NjI1IC0zNy45OTIxODggMTAuNDQ1MzEyIC0zNy4xODc1IDEwLjA5Mzc1IC0zNS43NSBDIDkuNzUgLTM0LjMxMjUgOS41NzgxMjUgLTMyLjI4NTE1NiA5LjU3ODEyNSAtMjkuNjcxODc1IEMgOS41NzgxMjUgLTI2LjMwNDY4OCA5LjU3ODEyNSAtMjIuOTQxNDA2IDkuNTc4MTI1IC0xOS41NzgxMjUgQyA5LjU3ODEyNSAtMTYuMjIyNjU2IDkuNTc4MTI1IC0xMi44NjMyODEgOS41NzgxMjUgLTkuNSBDIDkuNTc4MTI1IC03Ljg2MzI4MSA5LjgyODEyNSAtNi40Njg3NSAxMC4zMjgxMjUgLTUuMzEyNSBDIDEwLjgyODEyNSAtNC4xNTYyNSAxMS40ODQzNzUgLTMuMjEwOTM4IDEyLjI5Njg3NSAtMi40ODQzNzUgQyAxMy4xMDkzNzUgLTEuNzUzOTA2IDEzLjk4ODI4MSAtMS4yMjI2NTYgMTQuOTM3NSAtMC44OTA2MjUgQyAxNS44ODI4MTIgLTAuNTU0Njg4IDE2LjgwNDY4OCAtMC4zOTA2MjUgMTcuNzAzMTI1IC0wLjM5MDYyNSBDIDE4LjU5NzY1NiAtMC4zOTA2MjUgMTkuNTE5NTMxIC0wLjU1NDY4OCAyMC40Njg3NSAtMC44OTA2MjUgQyAyMS40MTQwNjIgLTEuMjIyNjU2IDIyLjI5Njg3NSAtMS43NTM5MDYgMjMuMTA5Mzc1IC0yLjQ4NDM3NSBDIDIzLjkyMTg3NSAtMy4yMTA5MzggMjQuNTc4MTI1IC00LjE1NjI1IDI1LjA3ODEyNSAtNS4zMTI1IEMgMjUuNTc4MTI1IC02LjQ2ODc1IDI1LjgyODEyNSAtNy44NjMyODEgMjUuODI4MTI1IC05LjUgQyAyNS44MjgxMjUgLTEyLjg2MzI4MSAyNS44MjgxMjUgLTE2LjIyMjY1NiAyNS44MjgxMjUgLTE5LjU3ODEyNSBDIDI1LjgyODEyNSAtMjIuOTQxNDA2IDI1LjgyODEyNSAtMjYuMzA0Njg4IDI1LjgyODEyNSAtMjkuNjcxODc1IEMgMjUuODI4MTI1IC0zMi4yODUxNTYgMjUuNjQ4NDM4IC0zNC4zMTI1IDI1LjI5Njg3NSAtMzUuNzUgQyAyNC45NTMxMjUgLTM3LjE4NzUgMjQuMTQwNjI1IC0zNy45OTIxODggMjIuODU5Mzc1IC0zOC4xNzE4NzUgTCAyMi44NTkzNzUgLTM4LjQ4NDM3NSBMIDMzLjQ4NDM3NSAtMzguNDg0Mzc1IEwgMzMuNDg0Mzc1IC0zOC4xNzE4NzUgQyAzMi4yMDMxMjUgLTM3Ljk5MjE4OCAzMS4zODI4MTIgLTM3LjE4NzUgMzEuMDMxMjUgLTM1Ljc1IEMgMzAuNjg3NSAtMzQuMzEyNSAzMC41MTU2MjUgLTMyLjI4NTE1NiAzMC41MTU2MjUgLTI5LjY3MTg3NSBDIDMwLjUxNTYyNSAtMjYuMzM1OTM4IDMwLjUxNTYyNSAtMjMuMDA3ODEyIDMwLjUxNTYyNSAtMTkuNjg3NSBDIDMwLjUxNTYyNSAtMTYuMzYzMjgxIDMwLjUxNTYyNSAtMTMuMDM1MTU2IDMwLjUxNTYyNSAtOS43MDMxMjUgQyAzMC41MTU2MjUgLTcuNTY2NDA2IDMwLjAxNTYyNSAtNS43MDcwMzEgMjkuMDE1NjI1IC00LjEyNSBDIDI4LjAxNTYyNSAtMi41NTA3ODEgMjYuNTY2NDA2IC0xLjM0Mzc1IDI0LjY3MTg3NSAtMC41IEMgMjIuNzczNDM4IDAuMzQzNzUgMjAuNDc2NTYyIDAuNzY1NjI1IDE3Ljc4MTI1IDAuNzY1NjI1IEMgMTMuNjc1NzgxIDAuNzY1NjI1IDEwLjUgLTAuMTc1NzgxIDguMjUgLTIuMDYyNSBDIDYuMDA3ODEyIC0zLjk0NTMxMiA0Ljg5MDYyNSAtNi40OTIxODggNC44OTA2MjUgLTkuNzAzMTI1IEMgNC44OTA2MjUgLTEzLjAzNTE1NiA0Ljg5MDYyNSAtMTYuMzYzMjgxIDQuODkwNjI1IC0xOS42ODc1IEMgNC44OTA2MjUgLTIzLjAwNzgxMiA0Ljg5MDYyNSAtMjYuMzM1OTM4IDQuODkwNjI1IC0yOS42NzE4NzUgQyA0Ljg5MDYyNSAtMzIuMjg1MTU2IDQuNzEwOTM4IC0zNC4zMTI1IDQuMzU5Mzc1IC0zNS43NSBDIDQuMDE1NjI1IC0zNy4xODc1IDMuMjAzMTI1IC0zNy45OTIxODggMS45MjE4NzUgLTM4LjE3MTg3NSBaIE0gMS45MjE4NzUgLTM4LjQ4NDM3NSAiLz48L2c+PC9nPjwvZz48ZyBmaWxsPSIjMDAwYjNkIiBmaWxsLW9wYWNpdHk9IjEiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDYxOS40Mjk0MjQsIDk5Ni4yOTMzNDIpIj48Zz48cGF0aCBkPSJNIDAuNzY1NjI1IC0wLjMxMjUgQyAxLjY5MTQwNiAtMC40NTcwMzEgMi42Mjg5MDYgLTAuOTEwMTU2IDMuNTc4MTI1IC0xLjY3MTg3NSBDIDQuNTIzNDM4IC0yLjQyOTY4OCA1LjQ2MDkzOCAtMy40MTAxNTYgNi4zOTA2MjUgLTQuNjA5Mzc1IEMgNy4zMTY0MDYgLTUuODE2NDA2IDguMjE4NzUgLTcuMTYwMTU2IDkuMDkzNzUgLTguNjQwNjI1IEMgOS45NzY1NjIgLTEwLjExNzE4OCAxMC44NDc2NTYgLTExLjY0ODQzOCAxMS43MDMxMjUgLTEzLjIzNDM3NSBDIDEyLjg1OTM3NSAtMTUuNDIxODc1IDEzLjY3NTc4MSAtMTYuOTM3NSAxNC4xNTYyNSAtMTcuNzgxMjUgQyAxNC4wMzEyNSAtMTguMDYyNSAxMy44OTg0MzggLTE4LjMyMDMxMiAxMy43NjU2MjUgLTE4LjU2MjUgQyAxMy42NDA2MjUgLTE4LjgxMjUgMTMuNTMxMjUgLTE5LjAzNTE1NiAxMy40Mzc1IC0xOS4yMzQzNzUgQyAxMy40Mzc1IC0xOS4yMzQzNzUgMTMuNDUzMTI1IC0xOS4xOTUzMTIgMTMuNDg0Mzc1IC0xOS4xMjUgQyAxMy41MjM0MzggLTE5LjA1MDc4MSAxMy41MzEyNSAtMTkuMDM5MDYyIDEzLjUgLTE5LjA5Mzc1IEMgMTMuNDc2NTYyIC0xOS4xNDQ1MzEgMTMuMzY3MTg4IC0xOS4zNTE1NjIgMTMuMTcxODc1IC0xOS43MTg3NSBDIDEyLjk4NDM3NSAtMjAuMDkzNzUgMTIuNjU2MjUgLTIwLjcxMDkzOCAxMi4xODc1IC0yMS41NzgxMjUgQyAxMS43MjY1NjIgLTIyLjQ1MzEyNSAxMS4wOTM3NSAtMjMuNjc1NzgxIDEwLjI4MTI1IC0yNS4yNSBDIDkuNDI1NzgxIC0yNi44MzIwMzEgOC42MDkzNzUgLTI4LjM2NzE4OCA3LjgyODEyNSAtMjkuODU5Mzc1IEMgNy4wNDY4NzUgLTMxLjM0NzY1NiA2LjI2NTYyNSAtMzIuNjk1MzEyIDUuNDg0Mzc1IC0zMy45MDYyNSBDIDQuNzAzMTI1IC0zNS4xMTMyODEgMy45MjU3ODEgLTM2LjA5Mzc1IDMuMTU2MjUgLTM2Ljg0Mzc1IEMgMi4zODI4MTIgLTM3LjYwMTU2MiAxLjU4NTkzOCAtMzguMDQ2ODc1IDAuNzY1NjI1IC0zOC4xNzE4NzUgTCAwLjc2NTYyNSAtMzguNDg0Mzc1IEwgMTIuODU5Mzc1IC0zOC40ODQzNzUgTCAxMi44NTkzNzUgLTM4LjE3MTg3NSBDIDEyLjM5MDYyNSAtMzguMDk3NjU2IDExLjk0NTMxMiAtMzcuOTA2MjUgMTEuNTMxMjUgLTM3LjU5Mzc1IEMgMTEuMTI1IC0zNy4yODkwNjIgMTAuOTIxODc1IC0zNi44MDQ2ODggMTAuOTIxODc1IC0zNi4xNDA2MjUgQyAxMC45MjE4NzUgLTM1LjQ5MjE4OCAxMS4xMzI4MTIgLTM0LjYyNSAxMS41NjI1IC0zMy41MzEyNSBDIDExLjk4ODI4MSAtMzIuNDQ1MzEyIDEyLjUzNTE1NiAtMzEuMjM4MjgxIDEzLjIwMzEyNSAtMjkuOTA2MjUgQyAxMy44NjcxODggLTI4LjU3MDMxMiAxNC41NzAzMTIgLTI3LjIyMjY1NiAxNS4zMTI1IC0yNS44NTkzNzUgQyAxNi4wNjI1IC0yNC41MDM5MDYgMTYuNzUzOTA2IC0yMy4yMzQzNzUgMTcuMzkwNjI1IC0yMi4wNDY4NzUgQyAxOC4wMDM5MDYgLTIzLjIzNDM3NSAxOC42Nzk2ODggLTI0LjUwMzkwNiAxOS40MjE4NzUgLTI1Ljg1OTM3NSBDIDIwLjE3MTg3NSAtMjcuMjIyNjU2IDIwLjg3ODkwNiAtMjguNTcwMzEyIDIxLjU0Njg3NSAtMjkuOTA2MjUgQyAyMi4yMTA5MzggLTMxLjIzODI4MSAyMi43NTc4MTIgLTMyLjQ0NTMxMiAyMy4xODc1IC0zMy41MzEyNSBDIDIzLjYxMzI4MSAtMzQuNjI1IDIzLjgyODEyNSAtMzUuNDkyMTg4IDIzLjgyODEyNSAtMzYuMTQwNjI1IEMgMjMuODI4MTI1IC0zNi41OTc2NTYgMjMuNjc1NzgxIC0zNi45NjA5MzggMjMuMzc1IC0zNy4yMzQzNzUgQyAyMy4wODIwMzEgLTM3LjUwMzkwNiAyMi43MzgyODEgLTM3LjcxMDkzOCAyMi4zNDM3NSAtMzcuODU5Mzc1IEMgMjEuOTQ1MzEyIC0zOC4wMTU2MjUgMjEuNTkzNzUgLTM4LjExNzE4OCAyMS4yODEyNSAtMzguMTcxODc1IEwgMjEuMjgxMjUgLTM4LjQ4NDM3NSBMIDMxLjUxNTYyNSAtMzguNDg0Mzc1IEwgMzEuNTE1NjI1IC0zOC4xNzE4NzUgQyAzMC41OTc2NTYgLTM4LjAyMzQzOCAyOS42NjAxNTYgLTM3LjU3MDMxMiAyOC43MDMxMjUgLTM2LjgxMjUgQyAyNy43NTM5MDYgLTM2LjA1MDc4MSAyNi44MTY0MDYgLTM1LjA2NjQwNiAyNS44OTA2MjUgLTMzLjg1OTM3NSBDIDI0Ljk3MjY1NiAtMzIuNjYwMTU2IDI0LjA3MDMxMiAtMzEuMzIwMzEyIDIzLjE4NzUgLTI5Ljg0Mzc1IEMgMjIuMzAwNzgxIC0yOC4zNjMyODEgMjEuNDM3NSAtMjYuODMyMDMxIDIwLjU5Mzc1IC0yNS4yNSBDIDE5LjQzNzUgLTIzLjA2MjUgMTguNjEzMjgxIC0yMS41NDY4NzUgMTguMTI1IC0yMC43MDMxMjUgQyAxOC4yNSAtMjAuNDQxNDA2IDE4LjM3NSAtMjAuMTc5Njg4IDE4LjUgLTE5LjkyMTg3NSBDIDE4LjYzMjgxMiAtMTkuNjcxODc1IDE4Ljc1MzkwNiAtMTkuNDQxNDA2IDE4Ljg1OTM3NSAtMTkuMjM0Mzc1IEMgMTguODU5Mzc1IC0xOS4yMzQzNzUgMTguODM1OTM4IC0xOS4yNjk1MzEgMTguNzk2ODc1IC0xOS4zNDM3NSBDIDE4Ljc1MzkwNiAtMTkuNDI1NzgxIDE4Ljc0MjE4OCAtMTkuNDQxNDA2IDE4Ljc2NTYyNSAtMTkuMzkwNjI1IEMgMTguNzk2ODc1IC0xOS4zMzU5MzggMTguOTA2MjUgLTE5LjEyNSAxOS4wOTM3NSAtMTguNzUgQyAxOS4yODkwNjIgLTE4LjM4MjgxMiAxOS42MTcxODggLTE3Ljc2NTYyNSAyMC4wNzgxMjUgLTE2Ljg5MDYyNSBDIDIwLjU0Njg3NSAtMTYuMDIzNDM4IDIxLjE5MTQwNiAtMTQuODA0Njg4IDIyLjAxNTYyNSAtMTMuMjM0Mzc1IEMgMjIuODU5Mzc1IC0xMS42NDg0MzggMjMuNjcxODc1IC0xMC4xMTMyODEgMjQuNDUzMTI1IC04LjYyNSBDIDI1LjIzNDM3NSAtNy4xMzI4MTIgMjYuMDE1NjI1IC01Ljc4NTE1NiAyNi43OTY4NzUgLTQuNTc4MTI1IEMgMjcuNTg1OTM4IC0zLjM2NzE4OCAyOC4zNzUgLTIuMzgyODEyIDI5LjE1NjI1IC0xLjYyNSBDIDI5LjkzNzUgLTAuODc1IDMwLjcyMjY1NiAtMC40Mzc1IDMxLjUxNTYyNSAtMC4zMTI1IEwgMzEuNTE1NjI1IDAgTCAxOS40Mzc1IDAgTCAxOS40Mzc1IC0wLjMxMjUgQyAxOS44OTQ1MzEgLTAuMzgyODEyIDIwLjMyODEyNSAtMC41NzAzMTIgMjAuNzM0Mzc1IC0wLjg3NSBDIDIxLjE0ODQzOCAtMS4xODc1IDIxLjM1OTM3NSAtMS42NzU3ODEgMjEuMzU5Mzc1IC0yLjM0Mzc1IEMgMjEuMzU5Mzc1IC0yLjk4ODI4MSAyMS4xNDQ1MzEgLTMuODUxNTYyIDIwLjcxODc1IC00LjkzNzUgQyAyMC4zMDA3ODEgLTYuMDMxMjUgMTkuNzU3ODEyIC03LjI0MjE4OCAxOS4wOTM3NSAtOC41NzgxMjUgQyAxOC40MjU3ODEgLTkuOTEwMTU2IDE3LjcxODc1IC0xMS4yNTM5MDYgMTYuOTY4NzUgLTEyLjYwOTM3NSBDIDE2LjIyNjU2MiAtMTMuOTcyNjU2IDE1LjUzNTE1NiAtMTUuMjUgMTQuODkwNjI1IC0xNi40Mzc1IEMgMTQuMjczNDM4IC0xNS4yNSAxMy41OTM3NSAtMTMuOTcyNjU2IDEyLjg0Mzc1IC0xMi42MDkzNzUgQyAxMi4xMDE1NjIgLTExLjI1MzkwNiAxMS4zOTg0MzggLTkuOTEwMTU2IDEwLjczNDM3NSAtOC41NzgxMjUgQyAxMC4wNjY0MDYgLTcuMjQyMTg4IDkuNTE5NTMxIC02LjAzMTI1IDkuMDkzNzUgLTQuOTM3NSBDIDguNjc1NzgxIC0zLjg1MTU2MiA4LjQ2ODc1IC0yLjk4ODI4MSA4LjQ2ODc1IC0yLjM0Mzc1IEMgOC40Njg3NSAtMS45MDYyNSA4LjYxMzI4MSAtMS41NDY4NzUgOC45MDYyNSAtMS4yNjU2MjUgQyA5LjIwNzAzMSAtMC45ODQzNzUgOS41NTQ2ODggLTAuNzY1NjI1IDkuOTUzMTI1IC0wLjYwOTM3NSBDIDEwLjM0NzY1NiAtMC40NjA5MzggMTAuNjk1MzEyIC0wLjM2MzI4MSAxMSAtMC4zMTI1IEwgMTEgMCBMIDAuNzY1NjI1IDAgWiBNIDAuNzY1NjI1IC0wLjMxMjUgIi8+PC9nPjwvZz48L2c+PGcgZmlsbD0iIzAwMGIzZCIgZmlsbC1vcGFjaXR5PSIxIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2ODIuNDk1NzAzLCA5OTYuMjkzMzQyKSI+PGc+PHBhdGggZD0iTSAxLjkyMTg3NSAwIEwgMS45MjE4NzUgLTAuMzEyNSBDIDMuMjAzMTI1IC0wLjUwNzgxMiA0LjAxNTYyNSAtMS4zMjAzMTIgNC4zNTkzNzUgLTIuNzUgQyA0LjcxMDkzOCAtNC4xNzU3ODEgNC44OTA2MjUgLTYuMTk1MzEyIDQuODkwNjI1IC04LjgxMjUgQyA0Ljg5MDYyNSAtMTIuMzAwNzgxIDQuODkwNjI1IC0xNS43NzM0MzggNC44OTA2MjUgLTE5LjIzNDM3NSBDIDQuODkwNjI1IC0yMi43MDMxMjUgNC44OTA2MjUgLTI2LjE3OTY4OCA0Ljg5MDYyNSAtMjkuNjcxODc1IEMgNC44OTA2MjUgLTMyLjI4NTE1NiA0LjcxMDkzOCAtMzQuMzEyNSA0LjM1OTM3NSAtMzUuNzUgQyA0LjAxNTYyNSAtMzcuMTg3NSAzLjIwMzEyNSAtMzcuOTkyMTg4IDEuOTIxODc1IC0zOC4xNzE4NzUgTCAxLjkyMTg3NSAtMzguNDg0Mzc1IEwgMTIuNTQ2ODc1IC0zOC40ODQzNzUgTCAxMi41NDY4NzUgLTM4LjE3MTg3NSBDIDExLjI2NTYyNSAtMzcuOTkyMTg4IDEwLjQ0NTMxMiAtMzcuMTg3NSAxMC4wOTM3NSAtMzUuNzUgQyA5Ljc1IC0zNC4zMTI1IDkuNTc4MTI1IC0zMi4yODUxNTYgOS41NzgxMjUgLTI5LjY3MTg3NSBDIDkuNTc4MTI1IC0yNi4xNzk2ODggOS41NzgxMjUgLTIyLjcwMzEyNSA5LjU3ODEyNSAtMTkuMjM0Mzc1IEMgOS41NzgxMjUgLTE1Ljc3MzQzOCA5LjU3ODEyNSAtMTIuMzAwNzgxIDkuNTc4MTI1IC04LjgxMjUgQyA5LjU3ODEyNSAtNi4xOTUzMTIgOS43NSAtNC4xNzU3ODEgMTAuMDkzNzUgLTIuNzUgQyAxMC40NDUzMTIgLTEuMzIwMzEyIDExLjI2NTYyNSAtMC41MDc4MTIgMTIuNTQ2ODc1IC0wLjMxMjUgTCAxMi41NDY4NzUgMCBaIE0gMS45MjE4NzUgMCAiLz48L2c+PC9nPjwvZz48ZyBmaWxsPSIjMDAwYjNkIiBmaWxsLW9wYWNpdHk9IjEiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDcyNy43NDkxMTgsIDk5Ni4yOTMzNDIpIj48Zz48cGF0aCBkPSJNIDEyLjE1NjI1IDAgTCAwLjc2NTYyNSAwIEwgMC43NjU2MjUgLTAuMzEyNSBDIDIuMzM1OTM4IC0wLjUzOTA2MiAzLjY0NDUzMSAtMS41NTQ2ODggNC42ODc1IC0zLjM1OTM3NSBDIDUuNzM4MjgxIC01LjE3MTg3NSA2Ljg2NzE4OCAtNy43NTc4MTIgOC4wNzgxMjUgLTExLjEyNSBDIDguNDYwOTM4IC0xMi4xNzU3ODEgOC45Mjk2ODggLTEzLjQ2MDkzOCA5LjQ4NDM3NSAtMTQuOTg0Mzc1IEMgMTAuMDM1MTU2IC0xNi41MTU2MjUgMTAuNjQ0NTMxIC0xOC4xNjQwNjIgMTEuMzEyNSAtMTkuOTM3NSBDIDExLjk3NjU2MiAtMjEuNzA3MDMxIDEyLjY0NDUzMSAtMjMuNDkyMTg4IDEzLjMxMjUgLTI1LjI5Njg3NSBDIDEzLjk3NjU2MiAtMjcuMTA5Mzc1IDE0LjYyNSAtMjguODQ3NjU2IDE1LjI1IC0zMC41MTU2MjUgQyAxNS44ODI4MTIgLTMyLjE3OTY4OCAxNi40NTMxMjUgLTMzLjY2NDA2MiAxNi45NTMxMjUgLTM0Ljk2ODc1IEMgMTcuNDUzMTI1IC0zNi4yODEyNSAxNy44NDM3NSAtMzcuMzIwMzEyIDE4LjEyNSAtMzguMDkzNzUgQyAxOC40MDYyNSAtMzguODYzMjgxIDE4LjU0Njg3NSAtMzkuMjUgMTguNTQ2ODc1IC0zOS4yNSBMIDE4Ljg1OTM3NSAtMzkuMjUgQyAxOC44NTkzNzUgLTM5LjI1IDE5LjAwMzkwNiAtMzguODYzMjgxIDE5LjI5Njg3NSAtMzguMDkzNzUgQyAxOS41OTc2NTYgLTM3LjMyMDMxMiAyMCAtMzYuMjgxMjUgMjAuNSAtMzQuOTY4NzUgQyAyMSAtMzMuNjY0MDYyIDIxLjU2NjQwNiAtMzIuMTc5Njg4IDIyLjIwMzEyNSAtMzAuNTE1NjI1IEMgMjIuODQ3NjU2IC0yOC44NDc2NTYgMjMuNTE1NjI1IC0yNy4xMDE1NjIgMjQuMjAzMTI1IC0yNS4yODEyNSBDIDI0Ljg5ODQzOCAtMjMuNDU3MDMxIDI1LjU4NTkzOCAtMjEuNjY0MDYyIDI2LjI2NTYyNSAtMTkuOTA2MjUgQyAyNi45NDE0MDYgLTE4LjE1NjI1IDI3LjU2MjUgLTE2LjUxNTYyNSAyOC4xMjUgLTE0Ljk4NDM3NSBDIDI4LjY5NTMxMiAtMTMuNDYwOTM4IDI5LjE3NTc4MSAtMTIuMTc1NzgxIDI5LjU2MjUgLTExLjEyNSBDIDMwLjQ1NzAzMSAtOC43MDcwMzEgMzEuMjUgLTYuNzIyNjU2IDMxLjkzNzUgLTUuMTcxODc1IEMgMzIuNjMyODEyIC0zLjYxNzE4OCAzMy4zNDc2NTYgLTIuNDU3MDMxIDM0LjA3ODEyNSAtMS42ODc1IEMgMzQuODA0Njg4IC0wLjkxNDA2MiAzNS42NjAxNTYgLTAuNDU3MDMxIDM2LjY0MDYyNSAtMC4zMTI1IEwgMzYuNjQwNjI1IDAgTCAyNC41OTM3NSAwIEwgMjQuNTkzNzUgLTAuMzEyNSBDIDI1LjQ4ODI4MSAtMC4zMzIwMzEgMjYuMTE3MTg4IC0wLjU2NjQwNiAyNi40ODQzNzUgLTEuMDE1NjI1IEMgMjYuODU5Mzc1IC0xLjQ2MDkzOCAyNy4wMzUxNTYgLTIuMDUwNzgxIDI3LjAxNTYyNSAtMi43ODEyNSBDIDI2Ljk5MjE4OCAtMy41MTk1MzEgMjYuODMyMDMxIC00LjM0NzY1NiAyNi41MzEyNSAtNS4yNjU2MjUgQyAyNi4yMzgyODEgLTYuMTkxNDA2IDI1Ljg4MjgxMiAtNy4xNDA2MjUgMjUuNDY4NzUgLTguMTA5Mzc1IEMgMjUuMDYyNSAtOS4wODU5MzggMjQuNjY0MDYyIC0xMC4wMzkwNjIgMjQuMjgxMjUgLTEwLjk2ODc1IEMgMjQuMjI2NTYyIC0xMS4wOTM3NSAyNC4xNzU3ODEgLTExLjIxODc1IDI0LjEyNSAtMTEuMzQzNzUgQyAyNC4wNzAzMTIgLTExLjQ3NjU2MiAyNC4wMTk1MzEgLTExLjYwOTM3NSAyMy45Njg3NSAtMTEuNzM0Mzc1IEwgOS43MDMxMjUgLTExLjczNDM3NSBMIDkuNDIxODc1IC0xMSBDIDguOTkyMTg4IC05LjgyMDMxMiA4LjY4NzUgLTguNjI1IDguNSAtNy40MDYyNSBDIDguMzIwMzEyIC02LjE4NzUgOC4zMTI1IC01LjA1MDc4MSA4LjQ2ODc1IC00IEMgOC42MjUgLTIuOTQ1MzEyIDkgLTIuMDkzNzUgOS41OTM3NSAtMS40Mzc1IEMgMTAuMTk1MzEyIC0wLjc4OTA2MiAxMS4wNTA3ODEgLTAuNDUzMTI1IDEyLjE1NjI1IC0wLjQyMTg3NSBaIE0gMTAuMTI1IC0xMi44OTA2MjUgTCAyMy41NDY4NzUgLTEyLjg5MDYyNSBDIDIzLjQ1MzEyNSAtMTMuMTcxODc1IDIzLjM0Mzc1IC0xMy40NTcwMzEgMjMuMjE4NzUgLTEzLjc1IEMgMjMuMTAxNTYyIC0xNC4wNTA3ODEgMjIuOTkyMTg4IC0xNC4zMjgxMjUgMjIuODkwNjI1IC0xNC41NzgxMjUgQyAyMi4zNTkzNzUgLTE2LjA0Njg3NSAyMS44MDA3ODEgLTE3LjU2MjUgMjEuMjE4NzUgLTE5LjEyNSBDIDIwLjY0NDUzMSAtMjAuNjg3NSAyMC4wODU5MzggLTIyLjE4NzUgMTkuNTQ2ODc1IC0yMy42MjUgQyAxOS4wMDM5MDYgLTI1LjA2MjUgMTguNTE1NjI1IC0yNi4zNDc2NTYgMTguMDc4MTI1IC0yNy40ODQzNzUgQyAxNy42NDg0MzggLTI4LjYyODkwNiAxNy4zMDQ2ODggLTI5LjUzOTA2MiAxNy4wNDY4NzUgLTMwLjIxODc1IEMgMTYuNzg1MTU2IC0zMC45MDYyNSAxNi42NTYyNSAtMzEuMjUgMTYuNjU2MjUgLTMxLjI1IFogTSAxMC4xMjUgLTEyLjg5MDYyNSAiLz48L2c+PC9nPjwvZz48ZyBmaWxsPSIjMDAwYjNkIiBmaWxsLW9wYWNpdHk9IjEiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDc5NS45NDIxNTgsIDk5Ni4yOTMzNDIpIj48Zy8+PC9nPjwvZz48ZyBmaWxsPSIjMDAwYjNkIiBmaWxsLW9wYWNpdHk9IjEiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDg0Mi4xMTg5MTYsIDk5Ni4yOTMzNDIpIj48Zy8+PC9nPjwvZz48ZyBmaWxsPSIjMDAwYjNkIiBmaWxsLW9wYWNpdHk9IjEiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDg4OC4yOTc2MTUsIDk5Ni4yOTMzNDIpIj48Zz48cGF0aCBkPSJNIDEuOTIxODc1IC0zOC40ODQzNzUgTCAxMi41NDY4NzUgLTM4LjQ4NDM3NSBMIDEyLjU0Njg3NSAtMzguMTcxODc1IEMgMTEuMjY1NjI1IC0zNy45OTIxODggMTAuNDQ1MzEyIC0zNy4xODc1IDEwLjA5Mzc1IC0zNS43NSBDIDkuNzUgLTM0LjMxMjUgOS41NzgxMjUgLTMyLjI4NTE1NiA5LjU3ODEyNSAtMjkuNjcxODc1IEMgOS41NzgxMjUgLTI2LjMwNDY4OCA5LjU3ODEyNSAtMjIuOTQxNDA2IDkuNTc4MTI1IC0xOS41NzgxMjUgQyA5LjU3ODEyNSAtMTYuMjIyNjU2IDkuNTc4MTI1IC0xMi44NjMyODEgOS41NzgxMjUgLTkuNSBDIDkuNTc4MTI1IC03Ljg2MzI4MSA5LjgyODEyNSAtNi40Njg3NSAxMC4zMjgxMjUgLTUuMzEyNSBDIDEwLjgyODEyNSAtNC4xNTYyNSAxMS40ODQzNzUgLTMuMjEwOTM4IDEyLjI5Njg3NSAtMi40ODQzNzUgQyAxMy4xMDkzNzUgLTEuNzUzOTA2IDEzLjk4ODI4MSAtMS4yMjI2NTYgMTQuOTM3NSAtMC44OTA2MjUgQyAxNS44ODI4MTIgLTAuNTU0Njg4IDE2LjgwNDY4OCAtMC4zOTA2MjUgMTcuNzAzMTI1IC0wLjM5MDYyNSBDIDE4LjU5NzY1NiAtMC4zOTA2MjUgMTkuNTE5NTMxIC0wLjU1NDY4OCAyMC40Njg3NSAtMC44OTA2MjUgQyAyMS40MTQwNjIgLTEuMjIyNjU2IDIyLjI5Njg3NSAtMS43NTM5MDYgMjMuMTA5Mzc1IC0yLjQ4NDM3NSBDIDIzLjkyMTg3NSAtMy4yMTA5MzggMjQuNTc4MTI1IC00LjE1NjI1IDI1LjA3ODEyNSAtNS4zMTI1IEMgMjUuNTc4MTI1IC02LjQ2ODc1IDI1LjgyODEyNSAtNy44NjMyODEgMjUuODI4MTI1IC05LjUgQyAyNS44MjgxMjUgLTEyLjg2MzI4MSAyNS44MjgxMjUgLTE2LjIyMjY1NiAyNS44MjgxMjUgLTE5LjU3ODEyNSBDIDI1LjgyODEyNSAtMjIuOTQxNDA2IDI1LjgyODEyNSAtMjYuMzA0Njg4IDI1LjgyODEyNSAtMjkuNjcxODc1IEMgMjUuODI4MTI1IC0zMi4yODUxNTYgMjUuNjQ4NDM4IC0zNC4zMTI1IDI1LjI5Njg3NSAtMzUuNzUgQyAyNC45NTMxMjUgLTM3LjE4NzUgMjQuMTQwNjI1IC0zNy45OTIxODggMjIuODU5Mzc1IC0zOC4xNzE4NzUgTCAyMi44NTkzNzUgLTM4LjQ4NDM3NSBMIDMzLjQ4NDM3NSAtMzguNDg0Mzc1IEwgMzMuNDg0Mzc1IC0zOC4xNzE4NzUgQyAzMi4yMDMxMjUgLTM3Ljk5MjE4OCAzMS4zODI4MTIgLTM3LjE4NzUgMzEuMDMxMjUgLTM1Ljc1IEMgMzAuNjg3NSAtMzQuMzEyNSAzMC41MTU2MjUgLTMyLjI4NTE1NiAzMC41MTU2MjUgLTI5LjY3MTg3NSBDIDMwLjUxNTYyNSAtMjYuMzM1OTM4IDMwLjUxNTYyNSAtMjMuMDA3ODEyIDMwLjUxNTYyNSAtMTkuNjg3NSBDIDMwLjUxNTYyNSAtMTYuMzYzMjgxIDMwLjUxNTYyNSAtMTMuMDM1MTU2IDMwLjUxNTYyNSAtOS43MDMxMjUgQyAzMC41MTU2MjUgLTcuNTY2NDA2IDMwLjAxNTYyNSAtNS43MDcwMzEgMjkuMDE1NjI1IC00LjEyNSBDIDI4LjAxNTYyNSAtMi41NTA3ODEgMjYuNTY2NDA2IC0xLjM0Mzc1IDI0LjY3MTg3NSAtMC41IEMgMjIuNzczNDM4IDAuMzQzNzUgMjAuNDc2NTYyIDAuNzY1NjI1IDE3Ljc4MTI1IDAuNzY1NjI1IEMgMTMuNjc1NzgxIDAuNzY1NjI1IDEwLjUgLTAuMTc1NzgxIDguMjUgLTIuMDYyNSBDIDYuMDA3ODEyIC0zLjk0NTMxMiA0Ljg5MDYyNSAtNi40OTIxODggNC44OTA2MjUgLTkuNzAzMTI1IEMgNC44OTA2MjUgLTEzLjAzNTE1NiA0Ljg5MDYyNSAtMTYuMzYzMjgxIDQuODkwNjI1IC0xOS42ODc1IEMgNC44OTA2MjUgLTIzLjAwNzgxMiA0Ljg5MDYyNSAtMjYuMzM1OTM4IDQuODkwNjI1IC0yOS42NzE4NzUgQyA0Ljg5MDYyNSAtMzIuMjg1MTU2IDQuNzEwOTM4IC0zNC4zMTI1IDQuMzU5Mzc1IC0zNS43NSBDIDQuMDE1NjI1IC0zNy4xODc1IDMuMjAzMTI1IC0zNy45OTIxODggMS45MjE4NzUgLTM4LjE3MTg3NSBaIE0gMS45MjE4NzUgLTM4LjQ4NDM3NSAiLz48L2c+PC9nPjwvZz48ZyBmaWxsPSIjMDAwYjNkIiBmaWxsLW9wYWNpdHk9IjEiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDk1NC40ODAxNzcsIDk5Ni4yOTMzNDIpIj48Zz48cGF0aCBkPSJNIDEuOTIxODc1IC0wLjMxMjUgQyAzLjIwMzEyNSAtMC41MDc4MTIgNC4wMTU2MjUgLTEuMzIwMzEyIDQuMzU5Mzc1IC0yLjc1IEMgNC43MTA5MzggLTQuMTc1NzgxIDQuODkwNjI1IC02LjE5NTMxMiA0Ljg5MDYyNSAtOC44MTI1IEMgNC44OTA2MjUgLTEyLjMwMDc4MSA0Ljg5MDYyNSAtMTUuNzczNDM4IDQuODkwNjI1IC0xOS4yMzQzNzUgQyA0Ljg5MDYyNSAtMjIuNzAzMTI1IDQuODkwNjI1IC0yNi4xNzk2ODggNC44OTA2MjUgLTI5LjY3MTg3NSBDIDQuODkwNjI1IC0zMi4yODUxNTYgNC43MTA5MzggLTM0LjMxMjUgNC4zNTkzNzUgLTM1Ljc1IEMgNC4wMTU2MjUgLTM3LjE4NzUgMy4yMDMxMjUgLTM3Ljk5MjE4OCAxLjkyMTg3NSAtMzguMTcxODc1IEwgMS45MjE4NzUgLTM4LjQ4NDM3NSBMIDkuMDc4MTI1IC0zOC40ODQzNzUgTCAyMC4zOTA2MjUgLTExLjEyNSBMIDMwLjE0MDYyNSAtMzguNDg0Mzc1IEwgMzcuNzk2ODc1IC0zOC40ODQzNzUgTCAzNy43OTY4NzUgLTM4LjE3MTg3NSBDIDM2LjUxNTYyNSAtMzcuOTkyMTg4IDM1LjY5NTMxMiAtMzcuMTg3NSAzNS4zNDM3NSAtMzUuNzUgQyAzNSAtMzQuMzEyNSAzNC44MjgxMjUgLTMyLjI4NTE1NiAzNC44MjgxMjUgLTI5LjY3MTg3NSBDIDM0LjgyODEyNSAtMjYuMTc5Njg4IDM0LjgyODEyNSAtMjIuNzAzMTI1IDM0LjgyODEyNSAtMTkuMjM0Mzc1IEMgMzQuODI4MTI1IC0xNS43NzM0MzggMzQuODI4MTI1IC0xMi4zMDA3ODEgMzQuODI4MTI1IC04LjgxMjUgQyAzNC44MjgxMjUgLTYuMTk1MzEyIDM1IC00LjE3NTc4MSAzNS4zNDM3NSAtMi43NSBDIDM1LjY5NTMxMiAtMS4zMjAzMTIgMzYuNTE1NjI1IC0wLjUwNzgxMiAzNy43OTY4NzUgLTAuMzEyNSBMIDM3Ljc5Njg3NSAwIEwgMjcuMTcxODc1IDAgTCAyNy4xNzE4NzUgLTAuMzEyNSBDIDI4LjQ1MzEyNSAtMC41MDc4MTIgMjkuMjY1NjI1IC0xLjMyMDMxMiAyOS42MDkzNzUgLTIuNzUgQyAyOS45NjA5MzggLTQuMTc1NzgxIDMwLjE0MDYyNSAtNi4xOTUzMTIgMzAuMTQwNjI1IC04LjgxMjUgQyAzMC4xNDA2MjUgLTEzLjE5NTMxMiAzMC4xNDA2MjUgLTE3LjU3ODEyNSAzMC4xNDA2MjUgLTIxLjk1MzEyNSBDIDMwLjE0MDYyNSAtMjYuMzI4MTI1IDMwLjE0MDYyNSAtMzAuNzA3MDMxIDMwLjE0MDYyNSAtMzUuMDkzNzUgTCAxOC44NTkzNzUgLTMuODQzNzUgTCAxOC41NDY4NzUgLTMuODQzNzUgTCA2LjI2NTYyNSAtMzMuNTE1NjI1IEMgNi4yNjU2MjUgLTMyLjA1NDY4OCA2LjI1NzgxMiAtMzAuODU5Mzc1IDYuMjUgLTI5LjkyMTg3NSBDIDYuMjM4MjgxIC0yOC45ODQzNzUgNi4yMjY1NjIgLTI4LjIxMDkzOCA2LjIxODc1IC0yNy42MDkzNzUgQyA2LjIwNzAzMSAtMjcuMDAzOTA2IDYuMTkxNDA2IC0yNi40NTcwMzEgNi4xNzE4NzUgLTI1Ljk2ODc1IEMgNi4xNjAxNTYgLTI1LjQ4ODI4MSA2LjE0ODQzOCAtMjQuOTc2NTYyIDYuMTQwNjI1IC0yNC40Mzc1IEMgNi4xMjg5MDYgLTIzLjg5NDUzMSA2LjExMzI4MSAtMjMuMjEwOTM4IDYuMDkzNzUgLTIyLjM5MDYyNSBDIDYuMDgyMDMxIC0yMS41NzgxMjUgNi4wNzgxMjUgLTIwLjUyMzQzOCA2LjA3ODEyNSAtMTkuMjM0Mzc1IEMgNi4wNzgxMjUgLTE3Ljk1MzEyNSA2LjA3ODEyNSAtMTcgNi4wNzgxMjUgLTE2LjM3NSBDIDYuMDc4MTI1IC0xNS43NSA2LjA3ODEyNSAtMTUuMzA0Njg4IDYuMDc4MTI1IC0xNS4wNDY4NzUgQyA2LjA3ODEyNSAtMTQuNzg1MTU2IDYuMDgyMDMxIC0xNC41NzgxMjUgNi4wOTM3NSAtMTQuNDIxODc1IEMgNi4xMTMyODEgLTE0LjI3MzQzOCA2LjEyNSAtMTQuMDM5MDYyIDYuMTI1IC0xMy43MTg3NSBDIDYuMTI1IC0xMy4zOTQ1MzEgNi4xMjUgLTEyLjg1OTM3NSA2LjEyNSAtMTIuMTA5Mzc1IEMgNi4xMjUgLTExLjM2NzE4OCA2LjEyNSAtMTAuMjY5NTMxIDYuMTI1IC04LjgxMjUgQyA2LjEyNSAtNi4xOTUzMTIgNi4yOTY4NzUgLTQuMTc1NzgxIDYuNjQwNjI1IC0yLjc1IEMgNi45ODQzNzUgLTEuMzIwMzEyIDcuNzk2ODc1IC0wLjUwNzgxMiA5LjA3ODEyNSAtMC4zMTI1IEwgOS4wNzgxMjUgMCBMIDEuOTIxODc1IDAgWiBNIDEuOTIxODc1IC0wLjMxMjUgIi8+PC9nPjwvZz48L2c+PGcgZmlsbD0iIzAwMGIzZCIgZmlsbC1vcGFjaXR5PSIxIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMDI0Ljk3MTY3OSwgOTk2LjI5MzM0MikiPjxnPjxwYXRoIGQ9Ik0gOS4wNDY4NzUgLTI3LjM1OTM3NSBDIDcuOTEwMTU2IC0yOS40NjA5MzggNi44NzUgLTMxLjI5Njg3NSA1LjkzNzUgLTMyLjg1OTM3NSBDIDUuMDA3ODEyIC0zNC40Mjk2ODggNC4xMzI4MTIgLTM1LjY3NTc4MSAzLjMxMjUgLTM2LjU5Mzc1IEMgMi40ODgyODEgLTM3LjUxOTUzMSAxLjY0MDYyNSAtMzguMDQ2ODc1IDAuNzY1NjI1IC0zOC4xNzE4NzUgTCAwLjc2NTYyNSAtMzguNDg0Mzc1IEwgMTIuMjM0Mzc1IC0zOC40ODQzNzUgTCAxMi4yMzQzNzUgLTM4LjE3MTg3NSBDIDExLjY3MTg3NSAtMzguMDY2NDA2IDExLjE2NDA2MiAtMzcuNzk2ODc1IDEwLjcxODc1IC0zNy4zNTkzNzUgQyAxMC4yNjk1MzEgLTM2LjkyOTY4OCAxMC4wNDY4NzUgLTM2LjM5NDUzMSAxMC4wNDY4NzUgLTM1Ljc1IEMgMTAuMDQ2ODc1IC0zNS4zMTI1IDEwLjI2OTUzMSAtMzQuNTc4MTI1IDEwLjcxODc1IC0zMy41NDY4NzUgQyAxMS4xNjQwNjIgLTMyLjUyMzQzOCAxMS43MzQzNzUgLTMxLjM0Mzc1IDEyLjQyMTg3NSAtMzAgQyAxMy4xMTcxODggLTI4LjY1NjI1IDEzLjg2MzI4MSAtMjcuMjczNDM4IDE0LjY1NjI1IC0yNS44NTkzNzUgQyAxNS40NTcwMzEgLTI0LjQ1MzEyNSAxNi4yMDcwMzEgLTIzLjE0MDYyNSAxNi45MDYyNSAtMjEuOTIxODc1IEMgMTcuNjEzMjgxIC0yMC43MDMxMjUgMTguMTg3NSAtMTkuNzE4NzUgMTguNjI1IC0xOC45Njg3NSBDIDIwLjAzOTA2MiAtMjEuNjEzMjgxIDIxLjIzNDM3NSAtMjMuODI4MTI1IDIyLjIwMzEyNSAtMjUuNjA5Mzc1IEMgMjMuMTc5Njg4IC0yNy4zOTA2MjUgMjMuOTcyNjU2IC0yOC44NzUgMjQuNTc4MTI1IC0zMC4wNjI1IEMgMjUuMTc5Njg4IC0zMS4yNTc4MTIgMjUuNjEzMjgxIC0zMi4yNjU2MjUgMjUuODc1IC0zMy4wNzgxMjUgQyAyNi4xNDQ1MzEgLTMzLjg5MDYyNSAyNi4yODEyNSAtMzQuNjEzMjgxIDI2LjI4MTI1IC0zNS4yNSBDIDI2LjI4MTI1IC0zNS41ODIwMzEgMjYuMjAzMTI1IC0zNS45NTcwMzEgMjYuMDQ2ODc1IC0zNi4zNzUgQyAyNS44OTg0MzggLTM2LjgwMDc4MSAyNS42MDkzNzUgLTM3LjE3OTY4OCAyNS4xNzE4NzUgLTM3LjUxNTYyNSBDIDI0LjczNDM3NSAtMzcuODQ3NjU2IDI0LjEwMTU2MiAtMzguMDMxMjUgMjMuMjgxMjUgLTM4LjA2MjUgTCAyMy4yODEyNSAtMzguNDg0Mzc1IEwgMzIuODU5Mzc1IC0zOC40ODQzNzUgTCAzMi44NTkzNzUgLTM4LjE3MTg3NSBDIDMyLjAxNTYyNSAtMzguMDQ2ODc1IDMxLjE3NTc4MSAtMzcuNTE5NTMxIDMwLjM0Mzc1IC0zNi41OTM3NSBDIDI5LjUwNzgxMiAtMzUuNjc1NzgxIDI4LjYyODkwNiAtMzQuNDI5Njg4IDI3LjcwMzEyNSAtMzIuODU5Mzc1IEMgMjYuNzg1MTU2IC0zMS4yOTY4NzUgMjUuNzUgLTI5LjQ2MDkzOCAyNC41OTM3NSAtMjcuMzU5Mzc1IEMgMjIuODc1IC0yNC4yMzQzNzUgMjEuNTQ2ODc1IC0yMS43ODkwNjIgMjAuNjA5Mzc1IC0yMC4wMzEyNSBDIDE5LjY3MTg3NSAtMTguMjY5NTMxIDE5LjIwMzEyNSAtMTcuMzkwNjI1IDE5LjIwMzEyNSAtMTcuMzkwNjI1IEMgMTkuMjAzMTI1IC0xNi4yMzQzNzUgMTkuMjAzMTI1IC0xNS4yMDcwMzEgMTkuMjAzMTI1IC0xNC4zMTI1IEMgMTkuMjAzMTI1IC0xMy40MTQwNjIgMTkuMTk1MzEyIC0xMi41MzUxNTYgMTkuMTg3NSAtMTEuNjcxODc1IEMgMTkuMTc1NzgxIC0xMC44MTY0MDYgMTkuMTcxODc1IC05Ljg2MzI4MSAxOS4xNzE4NzUgLTguODEyNSBDIDE5LjE3MTg3NSAtNi4xOTUzMTIgMTkuMzQzNzUgLTQuMTc1NzgxIDE5LjY4NzUgLTIuNzUgQyAyMC4wMzEyNSAtMS4zMjAzMTIgMjAuODQzNzUgLTAuNTA3ODEyIDIyLjEyNSAtMC4zMTI1IEwgMjIuMTI1IDAgTCAxMS41IDAgTCAxMS41IC0wLjMxMjUgQyAxMi43ODkwNjIgLTAuNTA3ODEyIDEzLjYwOTM3NSAtMS4zMjAzMTIgMTMuOTUzMTI1IC0yLjc1IEMgMTQuMjk2ODc1IC00LjE3NTc4MSAxNC40Njg3NSAtNi4xOTUzMTIgMTQuNDY4NzUgLTguODEyNSBDIDE0LjQ2ODc1IC0xMC4wNzAzMTIgMTQuNDY4NzUgLTExLjAyMzQzOCAxNC40Njg3NSAtMTEuNjcxODc1IEMgMTQuNDY4NzUgLTEyLjMyODEyNSAxNC40Njg3NSAtMTIuNzczNDM4IDE0LjQ2ODc1IC0xMy4wMTU2MjUgQyAxNC40Njg3NSAtMTMuMjY1NjI1IDE0LjQ2ODc1IC0xMy40MTAxNTYgMTQuNDY4NzUgLTEzLjQ1MzEyNSBDIDE0LjQ2ODc1IC0xMy40OTIxODggMTQuNDcyNjU2IC0xMy41MTk1MzEgMTQuNDg0Mzc1IC0xMy41MzEyNSBDIDE0LjUwMzkwNiAtMTMuNTM5MDYyIDE0LjUxNTYyNSAtMTMuNjQwNjI1IDE0LjUxNTYyNSAtMTMuODI4MTI1IEMgMTQuNTE1NjI1IC0xNC4wMjM0MzggMTQuNTE1NjI1IC0xNC4zOTA2MjUgMTQuNTE1NjI1IC0xNC45MjE4NzUgQyAxNC41MTU2MjUgLTE1LjQ2MDkzOCAxNC41MTU2MjUgLTE2LjI4NTE1NiAxNC41MTU2MjUgLTE3LjM5MDYyNSBDIDE0LjIwMzEyNSAtMTcuOTI5Njg4IDEzLjkxMDE1NiAtMTguNDQ1MzEyIDEzLjY0MDYyNSAtMTguOTM3NSBDIDEzLjM2NzE4OCAtMTkuNDI1NzgxIDEzLjA0Njg3NSAtMjAuMDA3ODEyIDEyLjY3MTg3NSAtMjAuNjg3NSBDIDEyLjMwNDY4OCAtMjEuMzYzMjgxIDExLjgzMjAzMSAtMjIuMjI2NTYyIDExLjI1IC0yMy4yODEyNSBDIDEwLjY3NTc4MSAtMjQuMzMyMDMxIDkuOTQxNDA2IC0yNS42OTE0MDYgOS4wNDY4NzUgLTI3LjM1OTM3NSBaIE0gOS4wNDY4NzUgLTI3LjM1OTM3NSAiLz48L2c+PC9nPjwvZz48ZyBmaWxsPSIjMDAwYjNkIiBmaWxsLW9wYWNpdHk9IjEiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDQ5Mi41NDMzMjcsIDEwMDAuNjQ0NjE0KSI+PGc+PHBhdGggZD0iTSAyOS45MjE4NzUgMCBMIDIuNjI1IDAgTCAyLjYyNSAtMC40MjE4NzUgQyA0LjM3NSAtMC43MDMxMjUgNS40ODQzNzUgLTEuODEyNSA1Ljk1MzEyNSAtMy43NSBDIDYuNDI5Njg4IC01LjY5NTMxMiA2LjY3MTg3NSAtOC40NTMxMjUgNi42NzE4NzUgLTEyLjAxNTYyNSBDIDYuNjcxODc1IC0xNi43NzM0MzggNi42NzE4NzUgLTIxLjUxNTYyNSA2LjY3MTg3NSAtMjYuMjM0Mzc1IEMgNi42NzE4NzUgLTMwLjk2MDkzOCA2LjY3MTg3NSAtMzUuNzA3MDMxIDYuNjcxODc1IC00MC40Njg3NSBDIDYuNjcxODc1IC00NC4wMzEyNSA2LjQyOTY4OCAtNDYuNzg5MDYyIDUuOTUzMTI1IC00OC43NSBDIDUuNDg0Mzc1IC01MC43MTg3NSA0LjM3NSAtNTEuODIwMzEyIDIuNjI1IC01Mi4wNjI1IEwgMi42MjUgLTUyLjQ4NDM3NSBMIDE3LjE1NjI1IC01Mi40ODQzNzUgTCAxNy4xNTYyNSAtNTIuMDYyNSBDIDE1LjQwNjI1IC01MS44MjAzMTIgMTQuMjk2ODc1IC01MC43MTg3NSAxMy44MjgxMjUgLTQ4Ljc1IEMgMTMuMzU5Mzc1IC00Ni43ODkwNjIgMTMuMTI1IC00NC4wMzEyNSAxMy4xMjUgLTQwLjQ2ODc1IEMgMTMuMTI1IC0zOC40Njg3NSAxMy4xMjUgLTM2Ljk1NzAzMSAxMy4xMjUgLTM1LjkzNzUgQyAxMy4xMjUgLTM0LjkyNTc4MSAxMy4xMjUgLTM0LjIwMzEyNSAxMy4xMjUgLTMzLjc2NTYyNSBDIDEzLjEyNSAtMzMuMzM1OTM4IDEzLjExMzI4MSAtMzMuMDE1NjI1IDEzLjA5Mzc1IC0zMi43OTY4NzUgQyAxMy4wNzAzMTIgLTMyLjU4NTkzOCAxMy4wNjI1IC0zMi4zMDQ2ODggMTMuMDYyNSAtMzEuOTUzMTI1IEMgMTMuMDYyNSAtMzEuNjA5Mzc1IDEzLjA2MjUgLTMxLjAwMzkwNiAxMy4wNjI1IC0zMC4xNDA2MjUgQyAxMy4wNjI1IC0yOS4yODUxNTYgMTMuMDYyNSAtMjcuOTg0Mzc1IDEzLjA2MjUgLTI2LjIzNDM3NSBDIDEzLjA2MjUgLTIwLjg0NzY1NiAxMy4wNTA3ODEgLTE2LjEzMjgxMiAxMy4wMzEyNSAtMTIuMDkzNzUgQyAxMy4wMTk1MzEgLTguMDUwNzgxIDEzLjAxNTYyNSAtNC41NDY4NzUgMTMuMDE1NjI1IC0xLjU3ODEyNSBMIDE5LjMxMjUgLTEuNTc4MTI1IEMgMjMuMTI1IC0xLjU3ODEyNSAyNi4yODEyNSAtMS45NjA5MzggMjguNzgxMjUgLTIuNzM0Mzc1IEMgMzEuMjg5MDYyIC0zLjUwMzkwNiAzMy4zMzU5MzggLTQuNjI4OTA2IDM0LjkyMTg3NSAtNi4xMDkzNzUgQyAzNi41MTU2MjUgLTcuNTk3NjU2IDM3LjgzNTkzOCAtOS40MTAxNTYgMzguODkwNjI1IC0xMS41NDY4NzUgTCAzOS4zMTI1IC0xMS41NDY4NzUgTCAzNS4zNzUgMC44OTA2MjUgTCAzNC45NTMxMjUgMC44OTA2MjUgQyAzNC43MTA5MzggMC42MDkzNzUgMzQuMjg1MTU2IDAuNDA2MjUgMzMuNjcxODc1IDAuMjgxMjUgQyAzMy4wNTQ2ODggMC4xNjQwNjIgMzIuNDA2MjUgMC4wODU5Mzc1IDMxLjcxODc1IDAuMDQ2ODc1IEMgMzEuMDM5MDYyIDAuMDE1NjI1IDMwLjQ0MTQwNiAwIDI5LjkyMTg3NSAwIFogTSAyOS45MjE4NzUgMCAiLz48L2c+PC9nPjwvZz48ZyBmaWxsPSIjZDdjYmM0IiBmaWxsLW9wYWNpdHk9IjEiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDgzMC42ODE3NDYsIDEwMDEuNTgyOTQyKSI+PGc+PHBhdGggZD0iTSAyOS45MjE4NzUgMCBMIDIuNjI1IDAgTCAyLjYyNSAtMC40MjE4NzUgQyA0LjM3NSAtMC43MDMxMjUgNS40ODQzNzUgLTEuODEyNSA1Ljk1MzEyNSAtMy43NSBDIDYuNDI5Njg4IC01LjY5NTMxMiA2LjY3MTg3NSAtOC40NTMxMjUgNi42NzE4NzUgLTEyLjAxNTYyNSBDIDYuNjcxODc1IC0xNi43NzM0MzggNi42NzE4NzUgLTIxLjUxNTYyNSA2LjY3MTg3NSAtMjYuMjM0Mzc1IEMgNi42NzE4NzUgLTMwLjk2MDkzOCA2LjY3MTg3NSAtMzUuNzA3MDMxIDYuNjcxODc1IC00MC40Njg3NSBDIDYuNjcxODc1IC00NC4wMzEyNSA2LjQyOTY4OCAtNDYuNzg5MDYyIDUuOTUzMTI1IC00OC43NSBDIDUuNDg0Mzc1IC01MC43MTg3NSA0LjM3NSAtNTEuODIwMzEyIDIuNjI1IC01Mi4wNjI1IEwgMi42MjUgLTUyLjQ4NDM3NSBMIDE3LjE1NjI1IC01Mi40ODQzNzUgTCAxNy4xNTYyNSAtNTIuMDYyNSBDIDE1LjQwNjI1IC01MS44MjAzMTIgMTQuMjk2ODc1IC01MC43MTg3NSAxMy44MjgxMjUgLTQ4Ljc1IEMgMTMuMzU5Mzc1IC00Ni43ODkwNjIgMTMuMTI1IC00NC4wMzEyNSAxMy4xMjUgLTQwLjQ2ODc1IEMgMTMuMTI1IC0zOC40Njg3NSAxMy4xMjUgLTM2Ljk1NzAzMSAxMy4xMjUgLTM1LjkzNzUgQyAxMy4xMjUgLTM0LjkyNTc4MSAxMy4xMjUgLTM0LjIwMzEyNSAxMy4xMjUgLTMzLjc2NTYyNSBDIDEzLjEyNSAtMzMuMzM1OTM4IDEzLjExMzI4MSAtMzMuMDE1NjI1IDEzLjA5Mzc1IC0zMi43OTY4NzUgQyAxMy4wNzAzMTIgLTMyLjU4NTkzOCAxMy4wNjI1IC0zMi4zMDQ2ODggMTMuMDYyNSAtMzEuOTUzMTI1IEMgMTMuMDYyNSAtMzEuNjA5Mzc1IDEzLjA2MjUgLTMxLjAwMzkwNiAxMy4wNjI1IC0zMC4xNDA2MjUgQyAxMy4wNjI1IC0yOS4yODUxNTYgMTMuMDYyNSAtMjcuOTg0Mzc1IDEzLjA2MjUgLTI2LjIzNDM3NSBDIDEzLjA2MjUgLTIwLjg0NzY1NiAxMy4wNTA3ODEgLTE2LjEzMjgxMiAxMy4wMzEyNSAtMTIuMDkzNzUgQyAxMy4wMTk1MzEgLTguMDUwNzgxIDEzLjAxNTYyNSAtNC41NDY4NzUgMTMuMDE1NjI1IC0xLjU3ODEyNSBMIDE5LjMxMjUgLTEuNTc4MTI1IEMgMjMuMTI1IC0xLjU3ODEyNSAyNi4yODEyNSAtMS45NjA5MzggMjguNzgxMjUgLTIuNzM0Mzc1IEMgMzEuMjg5MDYyIC0zLjUwMzkwNiAzMy4zMzU5MzggLTQuNjI4OTA2IDM0LjkyMTg3NSAtNi4xMDkzNzUgQyAzNi41MTU2MjUgLTcuNTk3NjU2IDM3LjgzNTkzOCAtOS40MTAxNTYgMzguODkwNjI1IC0xMS41NDY4NzUgTCAzOS4zMTI1IC0xMS41NDY4NzUgTCAzNS4zNzUgMC44OTA2MjUgTCAzNC45NTMxMjUgMC44OTA2MjUgQyAzNC43MTA5MzggMC42MDkzNzUgMzQuMjg1MTU2IDAuNDA2MjUgMzMuNjcxODc1IDAuMjgxMjUgQyAzMy4wNTQ2ODggMC4xNjQwNjIgMzIuNDA2MjUgMC4wODU5Mzc1IDMxLjcxODc1IDAuMDQ2ODc1IEMgMzEuMDM5MDYyIDAuMDE1NjI1IDMwLjQ0MTQwNiAwIDI5LjkyMTg3NSAwIFogTSAyOS45MjE4NzUgMCAiLz48L2c+PC9nPjwvZz48ZyBmaWxsPSIjMDAwYjNkIiBmaWxsLW9wYWNpdHk9IjEiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDgzNC4zMjAxMjEsIDEwMDAuNjQ0NjE0KSI+PGc+PHBhdGggZD0iTSAyOS45MjE4NzUgMCBMIDIuNjI1IDAgTCAyLjYyNSAtMC40MjE4NzUgQyA0LjM3NSAtMC43MDMxMjUgNS40ODQzNzUgLTEuODEyNSA1Ljk1MzEyNSAtMy43NSBDIDYuNDI5Njg4IC01LjY5NTMxMiA2LjY3MTg3NSAtOC40NTMxMjUgNi42NzE4NzUgLTEyLjAxNTYyNSBDIDYuNjcxODc1IC0xNi43NzM0MzggNi42NzE4NzUgLTIxLjUxNTYyNSA2LjY3MTg3NSAtMjYuMjM0Mzc1IEMgNi42NzE4NzUgLTMwLjk2MDkzOCA2LjY3MTg3NSAtMzUuNzA3MDMxIDYuNjcxODc1IC00MC40Njg3NSBDIDYuNjcxODc1IC00NC4wMzEyNSA2LjQyOTY4OCAtNDYuNzg5MDYyIDUuOTUzMTI1IC00OC43NSBDIDUuNDg0Mzc1IC01MC43MTg3NSA0LjM3NSAtNTEuODIwMzEyIDIuNjI1IC01Mi4wNjI1IEwgMi42MjUgLTUyLjQ4NDM3NSBMIDE3LjE1NjI1IC01Mi40ODQzNzUgTCAxNy4xNTYyNSAtNTIuMDYyNSBDIDE1LjQwNjI1IC01MS44MjAzMTIgMTQuMjk2ODc1IC01MC43MTg3NSAxMy44MjgxMjUgLTQ4Ljc1IEMgMTMuMzU5Mzc1IC00Ni43ODkwNjIgMTMuMTI1IC00NC4wMzEyNSAxMy4xMjUgLTQwLjQ2ODc1IEMgMTMuMTI1IC0zOC40Njg3NSAxMy4xMjUgLTM2Ljk1NzAzMSAxMy4xMjUgLTM1LjkzNzUgQyAxMy4xMjUgLTM0LjkyNTc4MSAxMy4xMjUgLTM0LjIwMzEyNSAxMy4xMjUgLTMzLjc2NTYyNSBDIDEzLjEyNSAtMzMuMzM1OTM4IDEzLjExMzI4MSAtMzMuMDE1NjI1IDEzLjA5Mzc1IC0zMi43OTY4NzUgQyAxMy4wNzAzMTIgLTMyLjU4NTkzOCAxMy4wNjI1IC0zMi4zMDQ2ODggMTMuMDYyNSAtMzEuOTUzMTI1IEMgMTMuMDYyNSAtMzEuNjA5Mzc1IDEzLjA2MjUgLTMxLjAwMzkwNiAxMy4wNjI1IC0zMC4xNDA2MjUgQyAxMy4wNjI1IC0yOS4yODUxNTYgMTMuMDYyNSAtMjcuOTg0Mzc1IDEzLjA2MjUgLTI2LjIzNDM3NSBDIDEzLjA2MjUgLTIwLjg0NzY1NiAxMy4wNTA3ODEgLTE2LjEzMjgxMiAxMy4wMzEyNSAtMTIuMDkzNzUgQyAxMy4wMTk1MzEgLTguMDUwNzgxIDEzLjAxNTYyNSAtNC41NDY4NzUgMTMuMDE1NjI1IC0xLjU3ODEyNSBMIDE5LjMxMjUgLTEuNTc4MTI1IEMgMjMuMTI1IC0xLjU3ODEyNSAyNi4yODEyNSAtMS45NjA5MzggMjguNzgxMjUgLTIuNzM0Mzc1IEMgMzEuMjg5MDYyIC0zLjUwMzkwNiAzMy4zMzU5MzggLTQuNjI4OTA2IDM0LjkyMTg3NSAtNi4xMDkzNzUgQyAzNi41MTU2MjUgLTcuNTk3NjU2IDM3LjgzNTkzOCAtOS40MTAxNTYgMzguODkwNjI1IC0xMS41NDY4NzUgTCAzOS4zMTI1IC0xMS41NDY4NzUgTCAzNS4zNzUgMC44OTA2MjUgTCAzNC45NTMxMjUgMC44OTA2MjUgQyAzNC43MTA5MzggMC42MDkzNzUgMzQuMjg1MTU2IDAuNDA2MjUgMzMuNjcxODc1IDAuMjgxMjUgQyAzMy4wNTQ2ODggMC4xNjQwNjIgMzIuNDA2MjUgMC4wODU5Mzc1IDMxLjcxODc1IDAuMDQ2ODc1IEMgMzEuMDM5MDYyIDAuMDE1NjI1IDMwLjQ0MTQwNiAwIDI5LjkyMTg3NSAwIFogTSAyOS45MjE4NzUgMCAiLz48L2c+PC9nPjwvZz48L3N2Zz4=";
+const ic = (n, cls = "i") => `<svg class="${cls}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+const fill = (s, v) => s.replace(/\{(\w+)\}/g, (_, k) => v[k] ?? "");
+
+/* ---------- Sprachen ---------- */
+const LANGS = [["de", "Deutsch"], ["en", "English"], ["tr", "Türkçe"], ["ru", "Русский"], ["ar", "العربية"]];
+
+const T = {
+  de: {
+    day: "Do", state_public: "Öffentlich, ohne Anmeldung", state_on: "CampusCard aktiv · {n}",
+    back: "Zurück", home: "Startseite", reader: "Lesefläche CampusCard", card_on: "CampusCard auflegen", card_off: "CampusCard entfernen",
+    schedule: "Stundenplan", rooms: "Raumplan", mensa: "Mensaplan", library: "Bibliothek", links: "Quick Links", settings: "Sprache und Darstellung",
+    sub_sched: "4 Termine heute, 1 Änderung", sub_sched_pub: "Mit CampusCard", sub_rooms: "Räume und Wege, auch barrierefrei", sub_mensa: "Heute 3 Gerichte",
+    sub_lib: "Öffnungszeiten und dein Konto", sub_lib_pub: "Öffnungszeiten", sub_links: "Hochschulseiten", sub_settings: "{l} · Textgröße",
+    welcome: "Willkommen auf dem Campus",
+    lead_public: "Wähle eine Funktion. Für deinen persönlichen Stundenplan lege die CampusCard auf die Lesefläche unter dem Bildschirm.",
+    notice_card: "Der Stundenplan ist persönlich. Lege deine CampusCard auf die Lesefläche unter dem Bildschirm. Danach öffnet sich deine Übersicht.",
+    hint_card_b: "CampusCard auflegen", hint_card: " für Stundenplan, Raumänderungen und Bibliothekskonto. Ohne Karte bleiben alle öffentlichen Funktionen nutzbar.",
+    morning: "Guten Morgen, {n}", user: "User",
+    lead_pers: "Deine persönliche Übersicht. Entferne die CampusCard, wenn du fertig bist. Dann werden deine Daten ausgeblendet.",
+    banner: "<b>Raumänderung heute:</b> {title}, {time} Uhr, jetzt in <b>{room}</b> statt <s>{old}</s>.", open_event: "Termin öffnen",
+    today_long: "Heute, {d}", flag_change: "Raumänderung", room: "Raum", instead: "statt {old}",
+    Vorlesung: "Vorlesung", Übung: "Übung", Praktikum: "Praktikum", no_map: "Für diesen Raum ist im Terminal noch kein Lageplan hinterlegt.",
+    change_hint: "<b>Raumänderung:</b> heute in {room} statt {old}.", change_reason: "Der Raum E216 ist heute wegen eines Beamerausfalls gesperrt.",
+    f_time: "Uhrzeit", f_room: "Raum", f_place: "Ort", route_to: "Route zu {r} anzeigen",
+    lead_rooms: "Wähle deinen Zielraum. Danach legst du fest, ob die Route Treppen enthalten darf.", search_ph: "Raum suchen, z. B. H 210", search_label: "Raum suchen",
+    no_hit: "Kein Raum gefunden. Prüfe die Schreibweise, zum Beispiel „T151“ oder „H 210“.",
+    seminar: "Seminarraum", hall: "Hörsaal", event_room: "Veranstaltungsraum", bT: "Gebäude T", bH: "Gebäude H",
+    f0: "Erdgeschoss", f1: "1. Obergeschoss", f2: "2. Obergeschoss",
+    route_h: "Route nach {r}", choose_type: "Routentyp wählen", short: "Kürzeste Route", bf: "Barrierefreie Route",
+    has_stairs: "Enthält {n} Stufen", stepfree: "Stufenlos", approx: "ca. {n} Min.", min: "Min.",
+    bf_desc: "Ohne Stufen, mit Aufzügen und stufenlosen Eingängen", start_route: "Route starten", choose_first: "Erst Routentyp wählen",
+    f_way: "Weg", f_stairs: "Stufen", f_lifts: "Aufzüge", f_entries: "Stufenlose Eingänge", none: "keine", not_needed: "nicht nötig",
+    open_steps: "Wegbeschreibung öffnen", way_to: "Weg nach {r}", sections: "{n} Abschnitte",
+    lift_status: "Stand der Aufzüge: alle in Betrieb (zuletzt geprüft heute, 07:30 Uhr).",
+    lead_mensa: "Mensa Emden · Ausgabe 11:30–14:00 Uhr", choose_day: "Tag wählen", filter: "Filter", today: "heute", Today: "Heute",
+    only_vegan: "Nur vegan", only_veg: "Nur vegetarisch", clear_filter: "Filter löschen",
+    students: "Studierende", staff: "Bedienstete", guests: "Gäste", prices: "Preise", allergens: "Allergene",
+    more: "Alle Preise und Allergene", less: "Weniger anzeigen",
+    no_dish: "An diesem Tag gibt es kein Gericht mit diesem Filter. Wähle „Filter löschen“, um alle Gerichte zu sehen.",
+    hours: "Öffnungszeiten", monthu: "Montag bis Donnerstag", fri: "Freitag", sat: "Samstag",
+    lib_note: "Heute geöffnet bis 20:00 Uhr. Gebäude T, Erdgeschoss, stufenloser Zugang.", account: "Dein Konto", return_by: "Rückgabe bis {d}",
+    acct_hint: "Deine Ausleihen siehst du nach dem Auflegen der CampusCard.",
+    lead_links: "Die Seite öffnet sich auf diesem Terminal im Lesemodus. Persönliche Logins sind hier nicht möglich.", target: "Ziel: {s}",
+    lead_settings: "Die Einstellungen gelten, bis das Terminal nach 2 Minuten ohne Eingabe zur Startseite zurückkehrt.",
+    text_size: "Textgröße", size1: "Normal", size2: "Groß", size3: "Sehr groß", language: "Sprache",
+    read_h: "CampusCard wird gelesen", read_p: "Bitte die Karte liegen lassen.", ok_h: "Erkannt. Hallo, {n}!", ok_p: "Deine persönliche Übersicht öffnet sich.",
+    bye_h: "Sitzung beendet", bye_p: "Deine persönlichen Daten wurden ausgeblendet. Die öffentliche Startseite erscheint.",
+    map_aria: "Lageplan der Gebäude T und H", m_square: "Campusplatz", m_stairs: "Treppe Nord", m_liftA: "Aufzug A", m_liftB: "Aufzug B",
+    m_ramp: "Rampe Ost", m_steps3: "3 Stufen", m_here: "Sie sind hier",
+    days: ["Mo", "Di", "Mi", "Do", "Fr"], dayNames: ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag"],
+    tags: { vegan: "vegan", vegetarisch: "vegetarisch", Geflügel: "Geflügel", Schwein: "Schwein", Fisch: "Fisch" },
+    alg: { a: "Gluten", c: "Ei", d: "Fisch", g: "Milch", i: "Sellerie", j: "Senf", k: "Sesam" },
+    courses: { mathe: "Mathematik 1", mci: "Mensch-Computer-Interaktion", digi: "Grundlagen der Digitalisierung" },
+    dishes: ["Linsen-Dal mit Kokos und Basmatireis", "Putengeschnetzeltes mit Champignons und Bandnudeln", "Gemüselasagne mit Blattsalat",
+      "Ostfriesischer Grünkohl mit Kartoffeln", "Falafel mit Hummus, Bulgur und Gurkensalat", "Seelachs im Backteig mit Kartoffelsalat",
+      "Kartoffel-Gemüse-Curry mit Basmatireis", "Käsespätzle mit Röstzwiebeln und Salat", "Hähnchenbrust in Rahmsoße mit Reis und Erbsen",
+      "Ofengemüse mit Kräuterdip und Ofenkartoffel", "Matjesfilet mit Bratkartoffeln"],
+    linkGroups: {"study": "Studium", "service": "Service-Einrichtungen", "advice": "Beratung", "campus": "Campus"},
+    linkNames: ["Vorlesungs-, Semester- und Raumpläne (MOSES)", "Portal Studierende (eCampus)", "Moodle (Lernraumsystem)", "Raumnavigation", "Einstieg ins Studium", "Studierenden-Service-Center", "Immatrikulations- und Prüfungsamt", "Bibliothek", "International Office", "Sprachenzentrum", "Career Service", "Zentrale Studienberatung", "Studieren mit Beeinträchtigung", "BAföG und Förderungen", "Hilfe bei Konflikten", "Veranstaltungen für Studierende", "health & sports", "Kontakt und Anfahrt"],
+    steps: {
+      north: "Vom Terminal geradeaus Richtung Norden durch das Foyer.", t102: "Zweite Tür links: T102. Der Weg ist stufenlos.",
+      toStairs: "Geradeaus zur Treppe Nord am Ende des Foyers.", stairs1: "Treppe ins 1. Obergeschoss, 21 Stufen.", t151s: "Oben rechts, dritte Tür: T151.", t149s: "Oben rechts, erste Tür: T149.", t149b: "Flur rechts, nach 5 m: T149. Tür 1,20 m breit, öffnet automatisch.",
+      toLiftA: "Im Foyer rechts zum Aufzug A, 12 m, stufenlos.", liftA1: "Aufzug A ins 1. Obergeschoss. Bedienfeld auf 85 cm Höhe.",
+      t151b: "Flur links, nach 15 m: T151. Tür 1,00 m breit, öffnet automatisch.", stairs2: "Treppe ins 2. Obergeschoss, 42 Stufen.",
+      t216s: "Flur rechts bis zum Ende: T216.", liftA2: "Aufzug A ins 2. Obergeschoss.", t216b: "Flur rechts bis zum Ende: T216. Tür 0,95 m breit.",
+      exitT: "Haupteingang Gebäude T verlassen, Tür öffnet automatisch.", plazaW: "Über den Campusplatz zum Westeingang von Gebäude H, 80 m.",
+      wSteps: "Westeingang: 3 Stufen.", h3s: "Im Erdgeschoss geradeaus: Hörsaal H 3.", exitTb: "Haupteingang Gebäude T verlassen. Stufenlos, Tür öffnet automatisch.",
+      edge: "Auf dem gepflasterten Weg am Rand des Campusplatzes, eben, 140 m.", ramp: "Osteingang Gebäude H: Rampe mit 6 % Steigung, stufenlos.",
+      h3b: "Hörsaal H 3, Rollstuhlplätze in der ersten Reihe links.", wSteps2: "Westeingang: 3 Stufen, dann Treppe ins 2. Obergeschoss, 34 Stufen.",
+      h210s: "Flur links: H 210.", liftB: "Direkt hinter dem Eingang Aufzug B ins 2. Obergeschoss.", h210b: "Flur links: H 210. Tür 1,10 m breit, öffnet automatisch." },
+  },
+
+  en: {
+    day: "Thu", state_public: "Public, no sign-in", state_on: "CampusCard active · {n}",
+    back: "Back", home: "Home", reader: "CampusCard reader", card_on: "Place CampusCard", card_off: "Remove CampusCard",
+    schedule: "Timetable", rooms: "Room finder", mensa: "Cafeteria menu", library: "Library", links: "Quick links", settings: "Language and display",
+    sub_sched: "4 classes today, 1 change", sub_sched_pub: "With CampusCard", sub_rooms: "Rooms and routes, including step-free", sub_mensa: "3 dishes today",
+    sub_lib: "Opening hours and your account", sub_lib_pub: "Opening hours", sub_links: "University pages", sub_settings: "{l} · Text size",
+    welcome: "Welcome to campus",
+    lead_public: "Choose a function. For your personal timetable, place your CampusCard on the reader below the screen.",
+    notice_card: "Your timetable is personal. Place your CampusCard on the reader below the screen and your overview will open.",
+    hint_card_b: "Place your CampusCard", hint_card: " to see your timetable, room changes and library account. All public functions work without a card.",
+    morning: "Good morning, {n}", user: "User",
+    lead_pers: "Your personal overview. Remove your CampusCard when you are done and your data will be hidden.",
+    banner: "<b>Room change today:</b> {title}, {time}, now in <b>{room}</b> instead of <s>{old}</s>.", open_event: "Open class",
+    today_long: "Today, {d}", flag_change: "Room change", room: "Room", instead: "instead of {old}",
+    Vorlesung: "Lecture", Übung: "Tutorial", Praktikum: "Lab", no_map: "No floor plan is available for this room on the terminal yet.",
+    change_hint: "<b>Room change:</b> today in {room} instead of {old}.", change_reason: "Room E216 is closed today because the projector is broken.",
+    f_time: "Time", f_room: "Room", f_place: "Location", route_to: "Show route to {r}",
+    lead_rooms: "Choose your destination room. Then decide whether the route may include stairs.", search_ph: "Search room, e.g. H 210", search_label: "Search room",
+    no_hit: "No room found. Check the spelling, for example “T151” or “H 210”.",
+    seminar: "Seminar room", hall: "Lecture hall", event_room: "Event room", bT: "Building T", bH: "Building H",
+    f0: "Ground floor", f1: "1st floor", f2: "2nd floor",
+    route_h: "Route to {r}", choose_type: "Choose route type", short: "Shortest route", bf: "Step-free route",
+    has_stairs: "Includes {n} steps", stepfree: "Step-free", approx: "approx. {n} min", min: "min",
+    bf_desc: "No steps, uses lifts and step-free entrances", start_route: "Start route", choose_first: "Choose a route type first",
+    f_way: "Distance", f_stairs: "Steps", f_lifts: "Lifts", f_entries: "Step-free entrances", none: "none", not_needed: "not needed",
+    open_steps: "Open directions", way_to: "Directions to {r}", sections: "{n} sections",
+    lift_status: "Lift status: all working (last checked today at 07:30).",
+    lead_mensa: "Emden cafeteria · Serving 11:30–14:00", choose_day: "Choose day", filter: "Filter", today: "today", Today: "Today",
+    only_vegan: "Vegan only", only_veg: "Vegetarian only", clear_filter: "Clear filter",
+    students: "Students", staff: "Staff", guests: "Guests", prices: "Prices", allergens: "Allergens",
+    more: "All prices and allergens", less: "Show less",
+    no_dish: "There is no dish with this filter on this day. Choose “Clear filter” to see all dishes.",
+    hours: "Opening hours", monthu: "Monday to Thursday", fri: "Friday", sat: "Saturday",
+    lib_note: "Open today until 20:00. Building T, ground floor, step-free access.", account: "Your account", return_by: "Return by {d}",
+    acct_hint: "Place your CampusCard to see your loans.",
+    lead_links: "The page opens on this terminal in reading mode. Personal sign-ins are not possible here.", target: "Goes to: {s}",
+    lead_settings: "These settings apply until the terminal returns to the home screen after 2 minutes without input.",
+    text_size: "Text size", size1: "Normal", size2: "Large", size3: "Extra large", language: "Language",
+    read_h: "Reading CampusCard", read_p: "Please leave the card in place.", ok_h: "Recognised. Hello, {n}!", ok_p: "Your personal overview is opening.",
+    bye_h: "Session ended", bye_p: "Your personal data has been hidden. The public home screen will appear.",
+    map_aria: "Site map of buildings T and H", m_square: "Campus square", m_stairs: "North stairs", m_liftA: "Lift A", m_liftB: "Lift B",
+    m_ramp: "East ramp", m_steps3: "3 steps", m_here: "You are here",
+    days: ["Mon", "Tue", "Wed", "Thu", "Fri"], dayNames: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+    tags: { vegan: "vegan", vegetarisch: "vegetarian", Geflügel: "poultry", Schwein: "pork", Fisch: "fish" },
+    alg: { a: "Gluten", c: "Egg", d: "Fish", g: "Milk", i: "Celery", j: "Mustard", k: "Sesame" },
+    courses: { mathe: "Mathematics 1", mci: "Human-Computer Interaction", digi: "Fundamentals of Digitalisation" },
+    dishes: ["Lentil dal with coconut and basmati rice", "Sliced turkey with mushrooms and tagliatelle", "Vegetable lasagne with green salad",
+      "East Frisian kale with potatoes", "Falafel with hummus, bulgur and cucumber salad", "Battered pollock with potato salad",
+      "Potato and vegetable curry with basmati rice", "Cheese spätzle with fried onions and salad", "Chicken breast in cream sauce with rice and peas",
+      "Roast vegetables with herb dip and baked potato", "Matjes herring with fried potatoes"],
+    linkGroups: {"study": "Studies", "service": "Service facilities", "advice": "Advice", "campus": "Campus"},
+    linkNames: ["Timetables, semester and room plans (MOSES)", "Student portal (eCampus)", "Moodle (learning platform)", "Room navigation", "Starting your studies", "Student Service Centre", "Enrolment and Examination Office", "Library", "International Office", "Language Centre", "Career Service", "Central Student Advisory Service", "Studying with a disability", "BAföG and funding", "Help with conflicts", "Events for students", "health & sports", "Contact and directions"],
+    steps: {
+      north: "From the terminal, go straight north through the foyer.", t102: "Second door on the left: T102. The route is step-free.",
+      toStairs: "Go straight to the north stairs at the end of the foyer.", stairs1: "Take the stairs to the 1st floor, 21 steps.", t151s: "At the top, third door on the right: T151.", t149s: "At the top, first door on the right: T149.", t149b: "Turn right into the corridor; after 5 m: T149. Door 1.20 m wide, opens automatically.",
+      toLiftA: "Turn right in the foyer to lift A, 12 m, step-free.", liftA1: "Take lift A to the 1st floor. Control panel at a height of 85 cm.",
+      t151b: "Turn left into the corridor; after 15 m: T151. Door 1.00 m wide, opens automatically.", stairs2: "Take the stairs to the 2nd floor, 42 steps.",
+      t216s: "Corridor to the right, to the end: T216.", liftA2: "Take lift A to the 2nd floor.", t216b: "Corridor to the right, to the end: T216. Door 0.95 m wide.",
+      exitT: "Leave building T by the main entrance; the door opens automatically.", plazaW: "Cross the campus square to the west entrance of building H, 80 m.",
+      wSteps: "West entrance: 3 steps.", h3s: "Straight ahead on the ground floor: lecture hall H 3.", exitTb: "Leave building T by the main entrance. Step-free, the door opens automatically.",
+      edge: "Follow the level, paved path along the edge of the campus square, 140 m.", ramp: "East entrance of building H: ramp with a 6 % gradient, step-free.",
+      h3b: "Lecture hall H 3, wheelchair spaces in the first row on the left.", wSteps2: "West entrance: 3 steps, then stairs to the 2nd floor, 34 steps.",
+      h210s: "Corridor to the left: H 210.", liftB: "Right behind the entrance, take lift B to the 2nd floor.", h210b: "Corridor to the left: H 210. Door 1.10 m wide, opens automatically." },
+  },
+
+  tr: {
+    day: "Per", state_public: "Herkese açık, giriş yok", state_on: "CampusCard etkin · {n}",
+    back: "Geri", home: "Ana sayfa", reader: "CampusCard okuyucu", card_on: "CampusCard'ı koy", card_off: "CampusCard'ı kaldır",
+    schedule: "Ders programı", rooms: "Oda planı", mensa: "Yemekhane menüsü", library: "Kütüphane", links: "Hızlı bağlantılar", settings: "Dil ve görünüm",
+    sub_sched: "Bugün 4 ders, 1 değişiklik", sub_sched_pub: "CampusCard ile", sub_rooms: "Odalar ve yollar, engelsiz olanlar dahil", sub_mensa: "Bugün 3 yemek",
+    sub_lib: "Açılış saatleri ve hesabın", sub_lib_pub: "Açılış saatleri", sub_links: "Üniversite sayfaları", sub_settings: "{l} · Yazı boyutu",
+    welcome: "Kampüse hoş geldin",
+    lead_public: "Bir işlev seç. Kişisel ders programın için CampusCard'ını ekranın altındaki okuyucuya koy.",
+    notice_card: "Ders programı kişiseldir. CampusCard'ını ekranın altındaki okuyucuya koy, ardından genel bakışın açılır.",
+    hint_card_b: "CampusCard'ını koy:", hint_card: " ders programı, oda değişiklikleri ve kütüphane hesabı için. Kart olmadan tüm herkese açık işlevler kullanılabilir.",
+    morning: "Günaydın, {n}", user: "Kullanıcı",
+    lead_pers: "Kişisel genel bakışın. İşin bitince CampusCard'ını kaldır, verilerin gizlenir.",
+    banner: "<b>Bugün oda değişikliği:</b> {title}, saat {time}, artık <b>{room}</b> salonunda (<s>{old}</s> yerine).", open_event: "Dersi aç",
+    today_long: "Bugün, {d}", flag_change: "Oda değişikliği", room: "Oda", instead: "{old} yerine",
+    Vorlesung: "Ders", Übung: "Uygulama", Praktikum: "Laboratuvar", no_map: "Bu oda için terminalde henüz kat planı yok.",
+    change_hint: "<b>Oda değişikliği:</b> bugün {old} yerine {room}.", change_reason: "E216 salonu projektör arızası nedeniyle bugün kapalı.",
+    f_time: "Saat", f_room: "Oda", f_place: "Yer", route_to: "{r} için rotayı göster",
+    lead_rooms: "Hedef odanı seç. Ardından rotada merdiven olup olamayacağına karar ver.", search_ph: "Oda ara, ör. H 210", search_label: "Oda ara",
+    no_hit: "Oda bulunamadı. Yazımı kontrol et, örneğin \"T151\" veya \"H 210\".",
+    seminar: "Seminer odası", hall: "Amfi", event_room: "Etkinlik salonu", bT: "T Binası", bH: "H Binası",
+    f0: "Zemin kat", f1: "1. kat", f2: "2. kat",
+    route_h: "{r} rotası", choose_type: "Rota türünü seç", short: "En kısa rota", bf: "Engelsiz rota",
+    has_stairs: "{n} basamak içerir", stepfree: "Basamaksız", approx: "yakl. {n} dk", min: "dk",
+    bf_desc: "Basamaksız, asansör ve basamaksız girişlerle", start_route: "Rotayı başlat", choose_first: "Önce rota türünü seç",
+    f_way: "Mesafe", f_stairs: "Basamak", f_lifts: "Asansör", f_entries: "Basamaksız girişler", none: "yok", not_needed: "gerekmiyor",
+    open_steps: "Yol tarifini aç", way_to: "{r} yol tarifi", sections: "{n} bölüm",
+    lift_status: "Asansör durumu: hepsi çalışıyor (son kontrol bugün 07:30).",
+    lead_mensa: "Emden yemekhanesi · Servis 11:30–14:00", choose_day: "Gün seç", filter: "Filtre", today: "bugün", Today: "Bugün",
+    only_vegan: "Sadece vegan", only_veg: "Sadece vejetaryen", clear_filter: "Filtreyi temizle",
+    students: "Öğrenciler", staff: "Personel", guests: "Misafirler", prices: "Fiyatlar", allergens: "Alerjenler",
+    more: "Tüm fiyatlar ve alerjenler", less: "Daha az göster",
+    no_dish: "Bu gün bu filtreye uyan yemek yok. Tüm yemekleri görmek için \"Filtreyi temizle\" seçeneğini seç.",
+    hours: "Açılış saatleri", monthu: "Pazartesi–Perşembe", fri: "Cuma", sat: "Cumartesi",
+    lib_note: "Bugün 20:00'ye kadar açık. T Binası, zemin kat, basamaksız giriş.", account: "Hesabın", return_by: "İade tarihi: {d}",
+    acct_hint: "Ödünç aldıklarını görmek için CampusCard'ını koy.",
+    lead_links: "Sayfa bu terminalde okuma modunda açılır. Burada kişisel giriş yapılamaz.", target: "Hedef: {s}",
+    lead_settings: "Bu ayarlar, terminal 2 dakika işlem yapılmadığında ana sayfaya dönene kadar geçerlidir.",
+    text_size: "Yazı boyutu", size1: "Normal", size2: "Büyük", size3: "Çok büyük", language: "Dil",
+    read_h: "CampusCard okunuyor", read_p: "Lütfen kartı kaldırma.", ok_h: "Tanındı. Merhaba {n}!", ok_p: "Kişisel genel bakışın açılıyor.",
+    bye_h: "Oturum sona erdi", bye_p: "Kişisel verilerin gizlendi. Herkese açık ana sayfa açılıyor.",
+    map_aria: "T ve H binalarının yerleşim planı", m_square: "Kampüs meydanı", m_stairs: "Kuzey merdiveni", m_liftA: "A asansörü", m_liftB: "B asansörü",
+    m_ramp: "Doğu rampası", m_steps3: "3 basamak", m_here: "Buradasın",
+    days: ["Pzt", "Sal", "Çar", "Per", "Cum"], dayNames: ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma"],
+    tags: { vegan: "vegan", vegetarisch: "vejetaryen", Geflügel: "tavuk", Schwein: "domuz eti", Fisch: "balık" },
+    alg: { a: "Gluten", c: "Yumurta", d: "Balık", g: "Süt", i: "Kereviz", j: "Hardal", k: "Susam" },
+    courses: { mathe: "Matematik 1", mci: "İnsan-Bilgisayar Etkileşimi", digi: "Dijitalleşmenin Temelleri" },
+    dishes: ["Hindistan cevizli mercimek dal ve basmati pirinci", "Mantarlı hindi sote ve şerit makarna", "Sebzeli lazanya ve yeşil salata",
+      "Doğu Frizya usulü kara lahana ve patates", "Humus, bulgur ve salatalık salatası ile falafel", "Kızarmış hamurlu kömür balığı ve patates salatası",
+      "Patatesli sebze köri ve basmati pirinci", "Kızarmış soğanlı peynirli spätzle ve salata", "Kremalı soslu tavuk göğsü, pilav ve bezelye",
+      "Fırın sebze, otlu sos ve fırın patates", "Matjes ringa fileto ve kızarmış patates"],
+    linkGroups: {"study": "Öğrenim", "service": "Hizmet birimleri", "advice": "Danışmanlık", "campus": "Kampüs"},
+    linkNames: ["Ders, dönem ve oda planları (MOSES)", "Öğrenci portalı (eCampus)", "Moodle (öğrenme platformu)", "Oda navigasyonu", "Öğrenime başlangıç", "Öğrenci Hizmet Merkezi", "Kayıt ve Sınav Ofisi", "Kütüphane", "Uluslararası Ofis", "Dil Merkezi", "Kariyer Merkezi", "Merkezi Öğrenci Danışmanlığı", "Engelli olarak öğrenim", "BAföG ve burslar", "Anlaşmazlıklarda yardım", "Öğrenci etkinlikleri", "health & sports", "İletişim ve ulaşım"],
+    steps: {
+      north: "Terminalden fuayeden kuzeye doğru düz ilerle.", t102: "Soldaki ikinci kapı: T102. Yol basamaksız.",
+      toStairs: "Fuayenin sonundaki Kuzey merdivenine düz ilerle.", stairs1: "Merdivenle 1. kata çık, 21 basamak.", t151s: "Yukarıda sağda üçüncü kapı: T151.", t149s: "Yukarıda sağda birinci kapı: T149.", t149b: "Koridorda sağa, 5 m sonra: T149. Kapı 1,20 m genişliğinde, otomatik açılır.",
+      toLiftA: "Fuayede sağa dön, A asansörüne git, 12 m, basamaksız.", liftA1: "A asansörüyle 1. kata çık. Düğme paneli 85 cm yükseklikte.",
+      t151b: "Koridorda sola, 15 m sonra: T151. Kapı 1,00 m genişliğinde, otomatik açılır.", stairs2: "Merdivenle 2. kata çık, 42 basamak.",
+      t216s: "Koridorda sağa, sonuna kadar: T216.", liftA2: "A asansörüyle 2. kata çık.", t216b: "Koridorda sağa, sonuna kadar: T216. Kapı 0,95 m genişliğinde.",
+      exitT: "T Binası'ndan ana girişten çık, kapı otomatik açılır.", plazaW: "Kampüs meydanını geçerek H Binası'nın batı girişine git, 80 m.",
+      wSteps: "Batı girişi: 3 basamak.", h3s: "Zemin katta düz ilerle: H 3 amfisi.", exitTb: "T Binası'ndan ana girişten çık. Basamaksız, kapı otomatik açılır.",
+      edge: "Kampüs meydanının kenarındaki düz, taş döşeli yolu izle, 140 m.", ramp: "H Binası doğu girişi: %6 eğimli rampa, basamaksız.",
+      h3b: "H 3 amfisi, tekerlekli sandalye yerleri ilk sırada solda.", wSteps2: "Batı girişi: 3 basamak, ardından merdivenle 2. kata, 34 basamak.",
+      h210s: "Koridorda sola: H 210.", liftB: "Girişin hemen arkasındaki B asansörüyle 2. kata çık.", h210b: "Koridorda sola: H 210. Kapı 1,10 m genişliğinde, otomatik açılır." },
+  },
+
+  ru: {
+    day: "Чт", state_public: "Общий доступ, без входа", state_on: "CampusCard активна · {n}",
+    back: "Назад", home: "Главная", reader: "Считыватель CampusCard", card_on: "Приложить CampusCard", card_off: "Убрать CampusCard",
+    schedule: "Расписание", rooms: "План корпусов", mensa: "Меню столовой", library: "Библиотека", links: "Быстрые ссылки", settings: "Язык и отображение",
+    sub_sched: "Сегодня 4 занятия, 1 изменение", sub_sched_pub: "С CampusCard", sub_rooms: "Аудитории и маршруты, в том числе без барьеров", sub_mensa: "Сегодня 3 блюда",
+    sub_lib: "Часы работы и твой аккаунт", sub_lib_pub: "Часы работы", sub_links: "Страницы вуза", sub_settings: "{l} · Размер текста",
+    welcome: "Добро пожаловать в кампус",
+    lead_public: "Выбери функцию. Чтобы открыть личное расписание, приложи CampusCard к считывателю под экраном.",
+    notice_card: "Расписание — это личные данные. Приложи CampusCard к считывателю под экраном, и откроется твой обзор.",
+    hint_card_b: "Приложи CampusCard", hint_card: ", чтобы увидеть расписание, изменения аудиторий и библиотечный аккаунт. Без карты доступны все общие функции.",
+    morning: "Доброе утро, {n}", user: "пользователь",
+    lead_pers: "Твой личный обзор. Когда закончишь, убери CampusCard, и твои данные будут скрыты.",
+    banner: "<b>Сегодня изменена аудитория:</b> {title}, {time}, теперь в <b>{room}</b> вместо <s>{old}</s>.", open_event: "Открыть занятие",
+    today_long: "Сегодня, {d}", flag_change: "Изменение аудитории", room: "Аудитория", instead: "вместо {old}",
+    Vorlesung: "Лекция", Übung: "Практика", Praktikum: "Практикум", no_map: "Для этой аудитории в терминале пока нет плана этажа.",
+    change_hint: "<b>Изменение аудитории:</b> сегодня в {room} вместо {old}.", change_reason: "Аудитория E216 сегодня закрыта из-за неисправного проектора.",
+    f_time: "Время", f_room: "Аудитория", f_place: "Место", route_to: "Показать маршрут до {r}",
+    lead_rooms: "Выбери нужную аудиторию. Затем укажи, можно ли идти по лестницам.", search_ph: "Поиск аудитории, напр. H 210", search_label: "Поиск аудитории",
+    no_hit: "Аудитория не найдена. Проверь написание, например «T151» или «H 210».",
+    seminar: "Семинарская аудитория", hall: "Лекционный зал", event_room: "Зал для мероприятий", bT: "Корпус T", bH: "Корпус H",
+    f0: "Первый этаж", f1: "Второй этаж", f2: "Третий этаж",
+    route_h: "Маршрут до {r}", choose_type: "Выбери тип маршрута", short: "Кратчайший маршрут", bf: "Безбарьерный маршрут",
+    has_stairs: "Ступеней: {n}", stepfree: "Без ступеней", approx: "около {n} мин", min: "мин",
+    bf_desc: "Без ступеней, с лифтами и входами без ступеней", start_route: "Начать маршрут", choose_first: "Сначала выбери тип маршрута",
+    f_way: "Путь", f_stairs: "Ступени", f_lifts: "Лифты", f_entries: "Входы без ступеней", none: "нет", not_needed: "не нужны",
+    open_steps: "Открыть описание пути", way_to: "Путь до {r}", sections: "Участков: {n}",
+    lift_status: "Состояние лифтов: все работают (проверено сегодня в 07:30).",
+    lead_mensa: "Столовая Эмден · Раздача 11:30–14:00", choose_day: "Выбери день", filter: "Фильтр", today: "сегодня", Today: "Сегодня",
+    only_vegan: "Только веганское", only_veg: "Только вегетарианское", clear_filter: "Сбросить фильтр",
+    students: "Студенты", staff: "Сотрудники", guests: "Гости", prices: "Цены", allergens: "Аллергены",
+    more: "Все цены и аллергены", less: "Свернуть",
+    no_dish: "В этот день нет блюд с таким фильтром. Нажми «Сбросить фильтр», чтобы увидеть все блюда.",
+    hours: "Часы работы", monthu: "Понедельник–четверг", fri: "Пятница", sat: "Суббота",
+    lib_note: "Сегодня открыто до 20:00. Корпус T, первый этаж, вход без ступеней.", account: "Твой аккаунт", return_by: "Вернуть до {d}",
+    acct_hint: "Приложи CampusCard, чтобы увидеть взятые книги.",
+    lead_links: "Страница откроется на этом терминале в режиме чтения. Личный вход здесь невозможен.", target: "Куда: {s}",
+    lead_settings: "Настройки действуют, пока терминал не вернётся на главную после 2 минут бездействия.",
+    text_size: "Размер текста", size1: "Обычный", size2: "Крупный", size3: "Очень крупный", language: "Язык",
+    read_h: "Считывание CampusCard", read_p: "Не убирай карту.", ok_h: "Карта распознана. Привет, {n}!", ok_p: "Открывается твой личный обзор.",
+    bye_h: "Сеанс завершён", bye_p: "Твои личные данные скрыты. Сейчас откроется общая главная страница.",
+    map_aria: "План корпусов T и H", m_square: "Площадь кампуса", m_stairs: "Северная лестница", m_liftA: "Лифт A", m_liftB: "Лифт B",
+    m_ramp: "Восточный пандус", m_steps3: "3 ступени", m_here: "Ты здесь",
+    days: ["Пн", "Вт", "Ср", "Чт", "Пт"], dayNames: ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница"],
+    tags: { vegan: "веганское", vegetarisch: "вегетарианское", Geflügel: "птица", Schwein: "свинина", Fisch: "рыба" },
+    alg: { a: "Глютен", c: "Яйцо", d: "Рыба", g: "Молоко", i: "Сельдерей", j: "Горчица", k: "Кунжут" },
+    courses: { mathe: "Математика 1", mci: "Человеко-компьютерное взаимодействие", digi: "Основы цифровизации" },
+    dishes: ["Дал из чечевицы с кокосом и рисом басмати", "Индейка с шампиньонами и лапшой", "Овощная лазанья с зелёным салатом",
+      "Восточнофризская кудрявая капуста с картофелем", "Фалафель с хумусом, булгуром и огуречным салатом", "Сайда в кляре с картофельным салатом",
+      "Карри из картофеля и овощей с рисом басмати", "Шпецле с сыром, жареным луком и салатом", "Куриная грудка в сливочном соусе с рисом и горошком",
+      "Запечённые овощи с травяным соусом и печёным картофелем", "Филе сельди матьес с жареным картофелем"],
+    linkGroups: {"study": "Учёба", "service": "Сервисные службы", "advice": "Консультации", "campus": "Кампус"},
+    linkNames: ["Расписания занятий, семестра и аудиторий (MOSES)", "Портал студентов (eCampus)", "Moodle (учебная платформа)", "Навигация по аудиториям", "Начало учёбы", "Сервисный центр для студентов", "Отдел зачисления и экзаменов", "Библиотека", "Международный отдел", "Языковой центр", "Карьерный центр", "Центральная консультация для студентов", "Учёба с ограниченными возможностями", "BAföG и стипендии", "Помощь при конфликтах", "Мероприятия для студентов", "health & sports", "Контакты и как добраться"],
+    steps: {
+      north: "От терминала иди прямо на север через фойе.", t102: "Вторая дверь слева: T102. Путь без ступеней.",
+      toStairs: "Иди прямо к северной лестнице в конце фойе.", stairs1: "Поднимись по лестнице на второй этаж, 21 ступень.", t151s: "Наверху справа третья дверь: T151.", t149s: "Наверху справа первая дверь: T149.", t149b: "По коридору направо, через 5 м: T149. Дверь шириной 1,20 м, открывается автоматически.",
+      toLiftA: "В фойе поверни направо к лифту A, 12 м, без ступеней.", liftA1: "На лифте A на второй этаж. Панель управления на высоте 85 см.",
+      t151b: "По коридору налево, через 15 м: T151. Дверь шириной 1,00 м, открывается автоматически.", stairs2: "Поднимись по лестнице на третий этаж, 42 ступени.",
+      t216s: "По коридору направо до конца: T216.", liftA2: "На лифте A на третий этаж.", t216b: "По коридору направо до конца: T216. Дверь шириной 0,95 м.",
+      exitT: "Выйди через главный вход корпуса T, дверь открывается автоматически.", plazaW: "Через площадь кампуса к западному входу корпуса H, 80 м.",
+      wSteps: "Западный вход: 3 ступени.", h3s: "На первом этаже прямо: лекционный зал H 3.", exitTb: "Выйди через главный вход корпуса T. Без ступеней, дверь открывается автоматически.",
+      edge: "По ровной мощёной дорожке вдоль края площади кампуса, 140 м.", ramp: "Восточный вход корпуса H: пандус с уклоном 6 %, без ступеней.",
+      h3b: "Лекционный зал H 3, места для инвалидных колясок в первом ряду слева.", wSteps2: "Западный вход: 3 ступени, затем по лестнице на третий этаж, 34 ступени.",
+      h210s: "По коридору налево: H 210.", liftB: "Сразу за входом на лифте B на третий этаж.", h210b: "По коридору налево: H 210. Дверь шириной 1,10 м, открывается автоматически." },
+  },
+
+  ar: {
+    day: "الخميس", state_public: "عام، دون تسجيل دخول", state_on: "بطاقة CampusCard مفعّلة · {n}",
+    back: "رجوع", home: "الصفحة الرئيسية", reader: "قارئ بطاقة CampusCard", card_on: "ضع بطاقة CampusCard", card_off: "أزل بطاقة CampusCard",
+    schedule: "الجدول الدراسي", rooms: "خريطة القاعات", mensa: "قائمة المطعم", library: "المكتبة", links: "روابط سريعة", settings: "اللغة والعرض",
+    sub_sched: "4 محاضرات اليوم، تغيير واحد", sub_sched_pub: "باستخدام CampusCard", sub_rooms: "القاعات والطرق، بما فيها الطرق الخالية من العوائق", sub_mensa: "3 أطباق اليوم",
+    sub_lib: "مواعيد العمل وحسابك", sub_lib_pub: "مواعيد العمل", sub_links: "صفحات الجامعة", sub_settings: "{l} · حجم الخط",
+    welcome: "مرحبًا بك في الحرم الجامعي",
+    lead_public: "اختر وظيفة. لعرض جدولك الشخصي ضع بطاقة CampusCard على القارئ أسفل الشاشة.",
+    notice_card: "الجدول الدراسي شخصي. ضع بطاقة CampusCard على القارئ أسفل الشاشة، وستُفتح صفحتك الشخصية.",
+    hint_card_b: "ضع بطاقة CampusCard", hint_card: " لعرض الجدول وتغييرات القاعات وحساب المكتبة. جميع الوظائف العامة متاحة دون بطاقة.",
+    morning: "صباح الخير يا {n}", user: "مستخدم",
+    lead_pers: "هذه صفحتك الشخصية. أزل بطاقة CampusCard عند الانتهاء، فتُخفى بياناتك.",
+    banner: "<b>تغيير القاعة اليوم:</b> {title}، الساعة {time}، الآن في <b>{room}</b> بدلًا من <s>{old}</s>.", open_event: "فتح المحاضرة",
+    today_long: "اليوم، {d}", flag_change: "تغيير القاعة", room: "القاعة", instead: "بدلًا من {old}",
+    Vorlesung: "محاضرة", Übung: "تمرين", Praktikum: "تطبيق عملي", no_map: "لا تتوفر خريطة لهذه القاعة على الشاشة بعد.",
+    change_hint: "<b>تغيير القاعة:</b> اليوم في {room} بدلًا من {old}.", change_reason: "القاعة E216 مغلقة اليوم بسبب عطل في جهاز العرض.",
+    f_time: "الوقت", f_room: "القاعة", f_place: "المكان", route_to: "عرض الطريق إلى {r}",
+    lead_rooms: "اختر القاعة المطلوبة، ثم حدّد ما إذا كان الطريق يمكن أن يتضمن درجًا.", search_ph: "ابحث عن قاعة، مثل H 210", search_label: "ابحث عن قاعة",
+    no_hit: "لم يتم العثور على قاعة. تحقق من الكتابة، مثل T151 أو H 210.",
+    seminar: "قاعة دراسية", hall: "مدرج", event_room: "قاعة فعاليات", bT: "المبنى T", bH: "المبنى H",
+    f0: "الطابق الأرضي", f1: "الطابق الأول", f2: "الطابق الثاني",
+    route_h: "الطريق إلى {r}", choose_type: "اختر نوع الطريق", short: "أقصر طريق", bf: "طريق خالٍ من العوائق",
+    has_stairs: "يتضمن {n} درجة", stepfree: "بدون درج", approx: "حوالي {n} دقائق", min: "دقائق",
+    bf_desc: "بدون درج، مع مصاعد ومداخل بلا درج", start_route: "بدء الطريق", choose_first: "اختر نوع الطريق أولًا",
+    f_way: "المسافة", f_stairs: "الدرج", f_lifts: "المصاعد", f_entries: "مداخل بلا درج", none: "لا يوجد", not_needed: "غير مطلوب",
+    open_steps: "فتح وصف الطريق", way_to: "وصف الطريق إلى {r}", sections: "{n} مراحل",
+    lift_status: "حالة المصاعد: جميعها تعمل (آخر فحص اليوم الساعة 07:30).",
+    lead_mensa: "مطعم إمدن · التقديم 11:30–14:00", choose_day: "اختر اليوم", filter: "التصفية", today: "اليوم", Today: "اليوم",
+    only_vegan: "نباتي صرف فقط", only_veg: "نباتي فقط", clear_filter: "مسح التصفية",
+    students: "الطلاب", staff: "الموظفون", guests: "الضيوف", prices: "الأسعار", allergens: "مسببات الحساسية",
+    more: "كل الأسعار ومسببات الحساسية", less: "عرض أقل",
+    no_dish: "لا توجد أطباق بهذه التصفية في هذا اليوم. اختر «مسح التصفية» لعرض كل الأطباق.",
+    hours: "مواعيد العمل", monthu: "من الاثنين إلى الخميس", fri: "الجمعة", sat: "السبت",
+    lib_note: "مفتوحة اليوم حتى 20:00. المبنى T، الطابق الأرضي، مدخل بلا درج.", account: "حسابك", return_by: "الإرجاع حتى {d}",
+    acct_hint: "ضع بطاقة CampusCard لعرض الكتب المستعارة.",
+    lead_links: "تُفتح الصفحة على هذه الشاشة في وضع القراءة. لا يمكن تسجيل الدخول الشخصي هنا.", target: "الوجهة: {s}",
+    lead_settings: "تبقى هذه الإعدادات سارية حتى تعود الشاشة إلى الصفحة الرئيسية بعد دقيقتين دون استخدام.",
+    text_size: "حجم الخط", size1: "عادي", size2: "كبير", size3: "كبير جدًا", language: "اللغة",
+    read_h: "جارٍ قراءة بطاقة CampusCard", read_p: "يُرجى عدم إزالة البطاقة.", ok_h: "تم التعرّف. مرحبًا {n}!", ok_p: "جارٍ فتح صفحتك الشخصية.",
+    bye_h: "انتهت الجلسة", bye_p: "تم إخفاء بياناتك الشخصية. ستظهر الصفحة الرئيسية العامة.",
+    map_aria: "خريطة المبنيين T و H", m_square: "ساحة الحرم الجامعي", m_stairs: "الدرج الشمالي", m_liftA: "المصعد A", m_liftB: "المصعد B",
+    m_ramp: "المنحدر الشرقي", m_steps3: "3 درجات", m_here: "أنت هنا",
+    days: ["الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة"], dayNames: ["الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة"],
+    tags: { vegan: "نباتي صرف", vegetarisch: "نباتي", Geflügel: "دواجن", Schwein: "لحم خنزير", Fisch: "سمك" },
+    alg: { a: "الغلوتين", c: "البيض", d: "السمك", g: "الحليب", i: "الكرفس", j: "الخردل", k: "السمسم" },
+    courses: { mathe: "الرياضيات 1", mci: "التفاعل بين الإنسان والحاسوب", digi: "أساسيات الرقمنة" },
+    dishes: ["دال العدس بجوز الهند مع أرز بسمتي", "شرائح الديك الرومي مع الفطر والمعكرونة الشريطية", "لازانيا الخضار مع سلطة خضراء",
+      "كرنب أجعد على طريقة فريزلاند الشرقية مع البطاطس", "فلافل مع حمص وبرغل وسلطة خيار", "سمك البلوق المقلي بالعجين مع سلطة البطاطس",
+      "كاري البطاطس والخضار مع أرز بسمتي", "شبيتسله بالجبن مع البصل المحمّص وسلطة", "صدر دجاج بصلصة الكريمة مع أرز وبازلاء",
+      "خضار مشوية في الفرن مع صلصة الأعشاب وبطاطس مخبوزة", "فيليه رنجة ماتيس مع بطاطس مقلية"],
+    linkGroups: {"study": "الدراسة", "service": "مرافق الخدمات", "advice": "الإرشاد", "campus": "الحرم الجامعي"},
+    linkNames: ["جداول المحاضرات والفصل والقاعات (MOSES)", "بوابة الطلاب (eCampus)", "Moodle (منصة التعلم)", "التنقل بين القاعات", "بداية الدراسة", "مركز خدمة الطلاب", "مكتب التسجيل والامتحانات", "المكتبة", "المكتب الدولي", "مركز اللغات", "خدمة التوظيف", "الإرشاد الدراسي المركزي", "الدراسة مع إعاقة", "BAföG والمنح", "المساعدة في النزاعات", "فعاليات للطلاب", "health & sports", "التواصل وطريقة الوصول"],
+    steps: {
+      north: "من الشاشة سر مباشرة نحو الشمال عبر البهو.", t102: "الباب الثاني على اليسار: T102. الطريق بدون درج.",
+      toStairs: "سر مباشرة إلى الدرج الشمالي في نهاية البهو.", stairs1: "اصعد الدرج إلى الطابق الأول، 21 درجة.", t151s: "في الأعلى، الباب الثالث على اليمين: T151.", t149s: "في الأعلى، الباب الأول على اليمين: T149.", t149b: "في الممر يمينًا، بعد 5 م: T149. عرض الباب 1.20 م ويُفتح تلقائيًا.",
+      toLiftA: "في البهو اتجه يمينًا إلى المصعد A، 12 م، بدون درج.", liftA1: "استخدم المصعد A إلى الطابق الأول. لوحة الأزرار على ارتفاع 85 سم.",
+      t151b: "في الممر اتجه يسارًا، بعد 15 م: T151. عرض الباب 1.00 م ويُفتح تلقائيًا.", stairs2: "اصعد الدرج إلى الطابق الثاني، 42 درجة.",
+      t216s: "في الممر يمينًا حتى النهاية: T216.", liftA2: "استخدم المصعد A إلى الطابق الثاني.", t216b: "في الممر يمينًا حتى النهاية: T216. عرض الباب 0.95 م.",
+      exitT: "اخرج من المدخل الرئيسي للمبنى T، الباب يُفتح تلقائيًا.", plazaW: "اعبر ساحة الحرم الجامعي إلى المدخل الغربي للمبنى H، 80 م.",
+      wSteps: "المدخل الغربي: 3 درجات.", h3s: "في الطابق الأرضي سر مباشرة: المدرج H 3.", exitTb: "اخرج من المدخل الرئيسي للمبنى T. بدون درج، الباب يُفتح تلقائيًا.",
+      edge: "اتبع الممر المرصوف المستوي على طرف ساحة الحرم الجامعي، 140 م.", ramp: "المدخل الشرقي للمبنى H: منحدر بميل 6٪، بدون درج.",
+      h3b: "المدرج H 3، أماكن الكراسي المتحركة في الصف الأول على اليسار.", wSteps2: "المدخل الغربي: 3 درجات، ثم الدرج إلى الطابق الثاني، 34 درجة.",
+      h210s: "في الممر يسارًا: H 210.", liftB: "مباشرة خلف المدخل استخدم المصعد B إلى الطابق الثاني.", h210b: "في الممر يسارًا: H 210. عرض الباب 1.10 م ويُفتح تلقائيًا." },
+  },
+};
+
+/* Änderungen nach den Cognitive Walkthroughs: neue und geänderte Texte je Sprache */
+const T_CW = {
+  de: { links: "Hochschulseiten", sub_links: "Termine, Service, Beratung", sub_sched: "4 Termine heute, 1 Raumänderung, 1 Ausfall",
+    sub_settings: "{l} · Textgröße · Kontrast",
+    notice_card: "<b>Der Stundenplan ist persönlich.</b> Lege deine CampusCard auf die markierte Lesefläche direkt unter dem Bildschirm. Danach öffnet sich deine Übersicht.",
+    hint_card: " für Stundenplan, Raumänderungen, Guthaben und Bibliothekskonto. Ohne Karte bleiben alle öffentlichen Funktionen nutzbar.",
+    card_here: "Hier CampusCard auflegen", type_note: "Tippe auf einen Routentyp. Die Route erscheint sofort; über „Zurück“ kannst du wechseln.",
+    legend: "Legende", l_bf: "durchgezogene Linie = barrierefreie Route", l_short: "gepunktete Linie = kürzeste Route", l_rest: "Kreis = Sie sind hier · dunkles Feld = Ziel {r}",
+    contrast: "Kontrast", c_std: "Standard", c_high: "Hoch", balance_s: "Guthaben {b}",
+    balance_hint: "<b>CampusCard-Guthaben: {b}.</b> Aufladen am Automaten neben der Mensakasse.",
+    flag_cancel: "Fällt aus", cancel_meta: "fällt heute aus",
+    cancel_hint: "<b>Fällt heute aus.</b> Die Übung entfällt wegen Krankheit. Ersatztermin: Freitag, 14:00 Uhr in S217." },
+  en: { links: "University pages", sub_links: "Timetables, services, advice", sub_sched: "4 classes today, 1 room change, 1 cancelled",
+    sub_settings: "{l} · Text size · Contrast",
+    notice_card: "<b>Your timetable is personal.</b> Place your CampusCard on the highlighted reader right below the screen and your overview will open.",
+    hint_card: " to see your timetable, room changes, balance and library account. All public functions work without a card.",
+    card_here: "Place CampusCard here", type_note: "Tap a route type. The route appears right away; use “Back” to switch.",
+    legend: "Legend", l_bf: "solid line = step-free route", l_short: "dotted line = shortest route", l_rest: "circle = you are here · dark box = destination {r}",
+    contrast: "Contrast", c_std: "Standard", c_high: "High", balance_s: "Balance {b}",
+    balance_hint: "<b>CampusCard balance: {b}.</b> Top up at the machine next to the cafeteria till.",
+    flag_cancel: "Cancelled", cancel_meta: "cancelled today",
+    cancel_hint: "<b>Cancelled today.</b> The tutorial is cancelled due to illness. Replacement: Friday, 14:00 in S217." },
+  tr: { links: "Üniversite sayfaları", sub_links: "Programlar, hizmetler, danışmanlık", sub_sched: "Bugün 4 ders, 1 oda değişikliği, 1 iptal",
+    sub_settings: "{l} · Yazı boyutu · Kontrast",
+    notice_card: "<b>Ders programı kişiseldir.</b> CampusCard'ını ekranın hemen altındaki işaretli okuyucuya koy, ardından genel bakışın açılır.",
+    hint_card: " ders programı, oda değişiklikleri, bakiye ve kütüphane hesabı için. Kart olmadan tüm herkese açık işlevler kullanılabilir.",
+    card_here: "CampusCard'ı buraya koy", type_note: "Bir rota türüne dokun. Rota hemen açılır; \"Geri\" ile değiştirebilirsin.",
+    legend: "Açıklama", l_bf: "düz çizgi = engelsiz rota", l_short: "noktalı çizgi = en kısa rota", l_rest: "daire = buradasın · koyu kutu = hedef {r}",
+    contrast: "Kontrast", c_std: "Standart", c_high: "Yüksek", balance_s: "Bakiye {b}",
+    balance_hint: "<b>CampusCard bakiyesi: {b}.</b> Yemekhane kasasının yanındaki otomattan yükleyebilirsin.",
+    flag_cancel: "İptal", cancel_meta: "bugün iptal",
+    cancel_hint: "<b>Bugün iptal.</b> Uygulama hastalık nedeniyle yapılmayacak. Telafi: Cuma, 14:00, S217." },
+  ru: { links: "Страницы вуза", sub_links: "Расписания, службы, консультации", sub_sched: "Сегодня 4 занятия, 1 смена аудитории, 1 отмена",
+    sub_settings: "{l} · Размер текста · Контраст",
+    notice_card: "<b>Расписание — это личные данные.</b> Приложи CampusCard к отмеченному считывателю прямо под экраном, и откроется твой обзор.",
+    hint_card: ", чтобы увидеть расписание, изменения аудиторий, баланс и библиотечный аккаунт. Без карты доступны все общие функции.",
+    card_here: "Приложи CampusCard здесь", type_note: "Нажми на тип маршрута. Маршрут откроется сразу; кнопкой «Назад» можно сменить тип.",
+    legend: "Легенда", l_bf: "сплошная линия = безбарьерный маршрут", l_short: "пунктир = кратчайший маршрут", l_rest: "круг = ты здесь · тёмное поле = цель {r}",
+    contrast: "Контраст", c_std: "Обычный", c_high: "Высокий", balance_s: "Баланс {b}",
+    balance_hint: "<b>Баланс CampusCard: {b}.</b> Пополнить можно в автомате рядом с кассой столовой.",
+    flag_cancel: "Отменено", cancel_meta: "сегодня отменено",
+    cancel_hint: "<b>Сегодня отменено.</b> Практика отменена из-за болезни. Замена: пятница, 14:00, S217." },
+  ar: { links: "صفحات الجامعة", sub_links: "الجداول والخدمات والإرشاد", sub_sched: "4 محاضرات اليوم، تغيير قاعة واحد، إلغاء واحد",
+    sub_settings: "{l} · حجم الخط · التباين",
+    notice_card: "<b>الجدول الدراسي شخصي.</b> ضع بطاقة CampusCard على القارئ المُعلَّم أسفل الشاشة مباشرة، وستُفتح صفحتك الشخصية.",
+    hint_card: " لعرض الجدول وتغييرات القاعات والرصيد وحساب المكتبة. جميع الوظائف العامة متاحة دون بطاقة.",
+    card_here: "ضع بطاقة CampusCard هنا", type_note: "اضغط على نوع الطريق، فيظهر الطريق فورًا؛ ويمكنك التغيير بزر «رجوع».",
+    legend: "دليل الخريطة", l_bf: "خط متصل = طريق خالٍ من العوائق", l_short: "خط منقط = أقصر طريق", l_rest: "دائرة = أنت هنا · مربع داكن = الوجهة {r}",
+    contrast: "التباين", c_std: "عادي", c_high: "عالٍ", balance_s: "الرصيد {b}",
+    balance_hint: "<b>رصيد CampusCard: {b}.</b> يمكن الشحن من الجهاز بجوار صندوق المطعم.",
+    flag_cancel: "ملغاة", cancel_meta: "ملغاة اليوم",
+    cancel_hint: "<b>ملغاة اليوم.</b> أُلغي التمرين بسبب المرض. الموعد البديل: الجمعة الساعة 14:00 في S217." },
+};
+for (const k in T_CW) Object.assign(T[k], T_CW[k]);
+const t = (k, v) => { const s = T[S.lang][k] ?? T.de[k]; return v ? fill(s, v) : s; };
+
+/* ---------- Daten ---------- */
+/* Datum live: echter Tag; Mensa zeigt die laufende Woche (am Wochenende die kommende) */
+const NOW = new Date(), WD = NOW.getDay();
+const TODAY = WD >= 1 && WD <= 5 ? WD - 1 : -1; /* Mo–Fr = 0–4, Wochenende = -1 */
+const START_DAY = TODAY < 0 ? 0 : TODAY;
+const MON = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate() - ((WD + 6) % 7) + (TODAY < 0 ? 7 : 0));
+const ddmm = d => String(d.getDate()).padStart(2, "0") + "." + String(d.getMonth() + 1).padStart(2, "0") + ".";
+const LOCALE = { de: "de-DE", en: "en-GB", tr: "tr-TR", ru: "ru-RU", ar: "ar-u-nu-latn" };
+const wdShort = () => NOW.toLocaleDateString(LOCALE[S.lang], { weekday: "short" }).replace(/\.$/, "");
+const longDate = () => NOW.toLocaleDateString(LOCALE[S.lang], { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+const NAME = "Luca", BALANCE = 12.40;   /* Persona der persönlichen Sitzung, CampusCard-Guthaben */
+const SCHEDULE = [
+  { id: "mci", time: "10:00", end: "11:30", type: "Praktikum", room: "T151", oldRoom: "E216" },
+  { id: "mathe", time: "12:00", end: "13:30", type: "Vorlesung", room: "T149" },
+  { id: "mathe-u", c: "mathe", time: "14:00", end: "15:30", type: "Übung", room: "S217", cancelled: true },
+  { id: "digi", time: "16:00", end: "17:30", type: "Vorlesung", room: "T149" },
+];
+
+const ROOMS = {
+  "T102": { kind: "seminar", b: "bT", floor: "f0", x: 120, y: 120 },
+  "T149": { kind: "hall", b: "bT", floor: "f1", x: 160, y: 125 },
+  "T151": { kind: "seminar", b: "bT", floor: "f1", x: 240, y: 125 },
+  "T216": { kind: "seminar", b: "bT", floor: "f2", x: 240, y: 205 },
+  "H 3":  { kind: "hall", b: "bH", floor: "f0", x: 450, y: 205 },
+  "H 210":{ kind: "event_room", b: "bH", floor: "f2", x: 480, y: 95 },
+};
+const START = { x: 95, y: 285 };
+
+/* Routen je Raum und Routentyp: Kartenpunkte, Kennzahlen, Wegbeschreibung (Schlüssel in T[lang].steps) */
+const ROUTES = {
+  "T102": {
+    short: { pts: [[95,285],[95,170],[120,120]], m: 35, min: 1, stairs: 0, lifts: 0, entries: 0, steps: [["walk","north"],["door","t102"]] },
+    bf: null },
+  "T149": {
+    short: { pts: [[95,285],[95,95],[160,95],[160,125]], m: 45, min: 2, stairs: 21, lifts: 0, entries: 0, steps: [["walk","toStairs"],["stairs","stairs1"],["door","t149s"]] },
+    bf: { pts: [[95,285],[185,285],[185,125],[160,125]], m: 45, min: 2, stairs: 0, lifts: 1, entries: 0, steps: [["walk","toLiftA"],["lift","liftA1"],["door","t149b"]] } },
+  "T151": {
+    short: { pts: [[95,285],[95,95],[240,95],[240,125]], m: 60, min: 2, stairs: 21, lifts: 0, entries: 0, steps: [["walk","toStairs"],["stairs","stairs1"],["door","t151s"]] },
+    bf: { pts: [[95,285],[185,285],[185,125],[240,125]], m: 55, min: 3, stairs: 0, lifts: 1, entries: 0, steps: [["walk","toLiftA"],["lift","liftA1"],["door","t151b"]] } },
+  "T216": {
+    short: { pts: [[95,285],[95,95],[240,95],[240,205]], m: 75, min: 3, stairs: 42, lifts: 0, entries: 0, steps: [["walk","toStairs"],["stairs","stairs2"],["door","t216s"]] },
+    bf: { pts: [[95,285],[185,285],[185,205],[240,205]], m: 60, min: 3, stairs: 0, lifts: 1, entries: 0, steps: [["walk","toLiftA"],["lift","liftA2"],["door","t216b"]] } },
+  "H 3": {
+    short: { pts: [[95,285],[300,285],[385,225],[450,205]], m: 140, min: 3, stairs: 3, lifts: 0, entries: 0, steps: [["door","exitT"],["walk","plazaW"],["stairs","wSteps"],["door","h3s"]] },
+    bf: { pts: [[95,285],[300,285],[555,300],[555,165],[450,205]], m: 210, min: 5, stairs: 0, lifts: 0, entries: 2, steps: [["door","exitTb"],["walk","edge"],["ramp","ramp"],["door","h3b"]] } },
+  "H 210": {
+    short: { pts: [[95,285],[300,285],[385,225],[430,150],[480,95]], m: 165, min: 4, stairs: 37, lifts: 0, entries: 0, steps: [["door","exitT"],["walk","plazaW"],["stairs","wSteps2"],["door","h210s"]] },
+    bf: { pts: [[95,285],[300,285],[555,300],[555,165],[510,140],[480,95]], m: 230, min: 6, stairs: 0, lifts: 1, entries: 2, steps: [["door","exitTb"],["walk","edge"],["ramp","ramp"],["lift","liftB"],["door","h210b"]] } },
+};
+
+/* Quick Links laut hs-emden-leer.de/quicklinks; Titel in T[lang].linkNames, gleiche Reihenfolge */
+const LINKS = [
+  ["study", ["timetable.hs-emden-leer.de/moses/", "ecampus.hs-emden-leer.de", "moodle.hs-emden-leer.de", "staff.hs-emden-leer.de/Navigation", "hs-emden-leer.de/einrichtungen/zentrale-studienberatung/infos-fuer-erstsemester"]],
+  ["service", ["hs-emden-leer.de/studierende/service-einrichtungen/studierenden-service-center", "hs-emden-leer.de/einrichtungen/immatrikulations-und-pruefungsamt", "hs-emden-leer.de/einrichtungen/bibliothek", "hs-emden-leer.de/einrichtungen/international-office", "hs-emden-leer.de/einrichtungen/sprachenzentrum", "hs-emden-leer.de/career-service"]],
+  ["advice", ["hs-emden-leer.de/einrichtungen/zentrale-studienberatung", "hs-emden-leer.de/einrichtungen/zentrale-studienberatung/studieren-mit-beeintraechtigung", "hs-emden-leer.de/studierende/beratung-fuer-studierende/bafoeg-und-foerderungen", "hs-emden-leer.de/einrichtungen/ombudswesen"]],
+  ["campus", ["hs-emden-leer.de/studierende/campusleben/veranstaltungen", "hs-emden-leer.de/health-sports", "hs-emden-leer.de/footer-menue/kontakt"]],
+];
+
+const DATES = [0, 1, 2, 3, 4].map(i => ddmm(new Date(MON.getFullYear(), MON.getMonth(), MON.getDate() + i)));
+/* d = Index in T[lang].dishes, all = Allergenkennzeichnung */
+const MENU = [
+  [ { d: 0, tags: ["vegan"], p: [2.70, 4.40, 5.60], all: ["i"] },
+    { d: 1, tags: ["Geflügel"], p: [3.50, 5.30, 6.70], all: ["a", "c", "g"] } ],
+  [ { d: 2, tags: ["vegetarisch"], p: [3.10, 4.90, 6.20], all: ["a", "g"] },
+    { d: 3, tags: ["Schwein"], p: [3.60, 5.40, 6.80], all: ["j"] } ],
+  [ { d: 4, tags: ["vegan"], p: [2.90, 4.60, 5.80], all: ["a", "k"] },
+    { d: 5, tags: ["Fisch"], p: [3.70, 5.50, 6.90], all: ["a", "d", "c", "j"] } ],
+  [ { d: 6, tags: ["vegan"], p: [2.90, 4.60, 5.80], all: ["i"] },
+    { d: 7, tags: ["vegetarisch"], p: [3.20, 5.00, 6.30], all: ["a", "c", "g"] },
+    { d: 8, tags: ["Geflügel"], p: [3.60, 5.40, 6.80], all: ["g", "i"] } ],
+  [ { d: 9, tags: ["vegetarisch"], p: [2.80, 4.50, 5.70], all: ["g"] },
+    { d: 10, tags: ["Fisch"], p: [3.80, 5.60, 7.00], all: ["d", "j"] } ],
+];
+const euro = n => S.lang === "en" ? "€" + n.toFixed(2) : n.toFixed(2).replace(".", ",") + " €";
+
+/* ---------- Walkthrough-Aufgaben (Abschnitt 10, bleiben deutsch) ---------- */
+const TASKS = {
+  luca: { name: "Luca", full: "Luca Maier", title: "Raumänderung finden",
+    scenario: "Lucas Smartphone-Akku ist leer. Kurz vor dem Praktikum will er wissen, in welchem Raum seine nächste Veranstaltung stattfindet und wie er dorthin kommt.",
+    goal: "Luca erkennt die Raumänderung zu T151, öffnet den Weg und beendet die Sitzung durch das Entfernen der CampusCard.",
+    steps: ["CampusCard auf die Lesefläche legen","Erkennen, dass die persönliche Übersicht geöffnet wurde","Aktuelle Veranstaltung und Raumänderung finden","Den neuen Raum T151 öffnen","Den Weg zum Raum anzeigen","CampusCard entfernen und Sitzung beenden"] },
+  mara: { name: "Mara", full: "Mara Janssen", title: "Mensaangebot abrufen",
+    scenario: "Mara besitzt kein Smartphone. Sie möchte ohne Anmeldung herausfinden, welche Gerichte heute in der Mensa angeboten werden.",
+    goal: "Mara erreicht den aktuellen Mensaplan, liest Gericht und Preis und kehrt zur öffentlichen Startseite zurück.",
+    steps: ["Auf der öffentlichen Startseite den Mensaplan finden","Mensaplan öffnen","Den gewünschten Tag auswählen oder den heutigen Tag erkennen","Gerichte, Preise und Kennzeichnungen lesen","Zur öffentlichen Startseite zurückkehren"] },
+  leonie: { name: "Leonie", full: "Leonie Kruse", title: "Barrierefreie Route finden",
+    scenario: "Leonie möchte den Veranstaltungsraum H 210 erreichen. Sie braucht eine Route ohne Treppen, mit Angaben zu Aufzügen und stufenlosen Eingängen.",
+    goal: "Leonie findet den Zielraum, wählt eine barrierefreie Route und erkennt die für sie wichtigen Wegangaben.",
+    steps: ["Raumplan auf der Startseite finden und öffnen","Zielraum auswählen oder eingeben","Barrierefreie Route als Routentyp wählen","Route starten","Aufzüge und stufenlose Eingänge auf dem Weg erkennen","Zur Startseite zurückkehren"] },
+};
+
+/* ---------- Zustand ---------- */
+const fresh = () => ({ session: false, screen: "home", history: [], event: null, room: null, routeType: null, query: "",
+  day: START_DAY, filter: null, open: {}, overlay: null, notice: null, scale: 1, contrast: "std", lang: "de" });
+let S = fresh();
+let task = "luca";
+let done = { luca: new Set(), mara: new Set(), leonie: new Set() };
+let busy = false;
+
+const tick = (k, ...idx) => { idx.forEach(i => done[k].add(i)); renderPanel(); };
+
+/* ---------- Navigation ---------- */
+function go(screen, patch = {}) {
+  S.history.push({ screen: S.screen, room: S.room, routeType: S.routeType, event: S.event });
+  Object.assign(S, patch, { screen, notice: null });
+  render(true);
+}
+function back() {
+  const prev = S.history.pop();
+  if (!prev) return home();
+  Object.assign(S, prev, { notice: null });
+  render(true);
+}
+function home() {
+  const from = S.screen;
+  S.history = []; S.screen = "home"; S.notice = null;
+  if (!S.session && from === "mensa") tick("mara", 4);
+  if (from !== "home" && done.leonie.has(3)) tick("leonie", 5);
+  render(true);
+}
+
+/* ---------- Bausteine ---------- */
+const roomKind = k => t(ROOMS[k].kind);
+const roomWhere = k => `${t(ROOMS[k].b)}, ${t(ROOMS[k].floor)}`;
+const routeOf = (k, type) => ROUTES[k][type] || ROUTES[k].short;
+const langName = () => LANGS.find(l => l[0] === S.lang)[1];
+
+function nowTime() { const d = new Date(); return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"); }
+function header() {
+  const st = S.session
+    ? `<span class="state on">${ic("card")} ${t("state_on", { n: NAME })}</span>`
+    : `<span class="state">${ic("card")} ${t("state_public")}</span>`;
+  return `<div class="top"><span class="brand" lang="de"><img src="${LOGO}" alt="">LUXIA LUMY</span>${st}<span class="clock" aria-live="off">${wdShort()} ${ddmm(NOW)} · <span id="clockTime">${nowTime()}</span></span></div>`;
+}
+function nav() {
+  const sub = S.screen !== "home";
+  const cls = sub ? "" : " placeholder";
+  const off = sub ? "" : 'tabindex="-1" aria-hidden="true"';
+  return `<div class="nav">
+    <button class="btn ghost${cls}" data-act="back" ${off}>${ic("back", "i flip")} ${t("back")}</button>
+    <button class="btn ghost${cls}" data-act="home" ${off}>${ic("home")} ${t("home")}</button>
+  </div>`;
+}
+const tile = (act, icon, sub, extra = "") =>
+  `<button class="tile ${extra}" data-act="${act}">${ic(icon)}<span><b>${t(act)}</b><small>${sub}</small></span></button>`;
+const chev = () => ic("chev", "i chev flip");
+
+function mapSvg(roomKey, type) {
+  const r = roomKey ? ROOMS[roomKey] : null;
+  const route = roomKey && type ? routeOf(roomKey, type) : null;
+  const path = route ? route.pts.map(p => p.join(",")).join(" ") : "";
+  const ls = S.lang === "ar" ? 0 : 2;
+  const up = s => s.toLocaleUpperCase(S.lang);
+  const small = (x, y, s, anchor = "start") => `<text x="${x}" y="${y}" font-family="Palatino, 'Noto Naskh Arabic', serif" font-size="11" fill="#4B5068" text-anchor="${anchor}">${s}</text>`;
+  return `<svg viewBox="0 0 600 340" role="img" aria-label="${t("map_aria")}">
+    <rect x="0" y="0" width="600" height="340" fill="#EDE6DC"/>
+    <rect x="40" y="60" width="260" height="250" rx="6" fill="#D7CBC4" stroke="#000B3D" stroke-opacity=".35"/>
+    <rect x="390" y="50" width="190" height="200" rx="6" fill="#D7CBC4" stroke="#000B3D" stroke-opacity=".35"/>
+    <text x="54" y="84" font-family="Tenor Sans, 'Noto Naskh Arabic', sans-serif" font-size="14" letter-spacing="${ls}" fill="#000B3D">${up(t("bT"))}</text>
+    <text x="404" y="74" font-family="Tenor Sans, 'Noto Naskh Arabic', sans-serif" font-size="14" letter-spacing="${ls}" fill="#000B3D">${up(t("bH"))}</text>
+    <text x="345" y="325" font-family="Palatino, 'Noto Naskh Arabic', serif" font-size="13" fill="#4B5068" text-anchor="middle">${t("m_square")}</text>
+    <g fill="none" stroke="#000B3D" stroke-opacity=".55" stroke-width="1.6">
+      <path d="M80 100h30M85 92h20M90 84h10"/>
+      <rect x="176" y="270" width="18" height="22"/><rect x="500" y="130" width="18" height="22"/>
+      <path d="M540 175h30l-30 -18z"/>
+    </g>
+    ${small(72, 118, t("m_stairs"))}${small(160, 306, t("m_liftA"))}${small(492, 124, t("m_liftB"))}${small(528, 195, t("m_ramp"))}${small(372, 244, t("m_steps3"), "end")}
+    ${route ? `<polyline points="${path}" fill="none" stroke="#000B3D" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" ${type === "bf" ? "" : 'stroke-dasharray="2 9"'}/>` : ""}
+    <circle cx="${START.x}" cy="${START.y}" r="9" fill="#000B3D"/><circle cx="${START.x}" cy="${START.y}" r="16" fill="none" stroke="#000B3D" stroke-width="2"/>
+    <text x="${START.x + 22}" y="${START.y + 5}" font-family="Palatino, 'Noto Naskh Arabic', serif" font-size="13" font-weight="700" fill="#000B3D">${t("m_here")}</text>
+    ${r ? `<g><rect x="${r.x - 30}" y="${r.y - 14}" width="60" height="28" rx="6" fill="#000B3D"/><text x="${r.x}" y="${r.y + 5}" font-family="Palatino, serif" font-size="14" font-weight="700" fill="#F5F1E8" text-anchor="middle">${roomKey}</text></g>` : ""}
+  </svg>`;
+}
+
+/* ---------- Screens ---------- */
+const V = {
+  home() {
+    const setSub = t("sub_settings", { l: langName() });
+    if (S.session) {
+      const ev = SCHEDULE.find(e => e.id === "mci");
+      return `<h1>${t("morning", { n: NAME })}</h1>
+        <p class="lead">${t("lead_pers")}</p>
+        <div class="hint solid">${ic("alert")}<div class="body" style="display:flex;flex-direction:column;gap:12px;min-width:0">
+          <p>${t("banner", { title: t("courses").mci, time: ev.time, room: ev.room, old: ev.oldRoom })}</p>
+          <button class="btn" data-act="event" data-id="mci">${t("open_event")} ${chev()}</button></div></div>
+        <div class="tiles">
+          ${tile("schedule", "cal", t("sub_sched"))}
+          ${tile("rooms", "map", t("sub_rooms"))}
+          ${tile("mensa", "food", t("sub_mensa") + " · " + t("balance_s", { b: euro(BALANCE) }))}
+          ${tile("library", "book", t("sub_lib"))}
+          ${tile("links", "link", t("sub_links"))}
+          ${tile("settings", "lang", setSub)}
+        </div>`;
+    }
+    return `<h1>${t("welcome")}</h1>
+      <p class="lead">${t("lead_public")}</p>
+      ${S.notice === "card" ? `<div class="hint solid fade">${ic("down")}<p>${t("notice_card")}</p></div>` : ""}
+      <div class="tiles">
+        ${tile("schedule", "cal", t("sub_sched_pub"), "locked")}
+        ${tile("rooms", "map", t("sub_rooms"))}
+        ${tile("mensa", "food", t("sub_mensa"))}
+        ${tile("library", "book", t("sub_lib_pub"))}
+        ${tile("links", "link", t("sub_links"))}
+        ${tile("settings", "lang", setSub)}
+      </div>
+      ${S.notice === "card" ? "" : `<div class="hint">${ic("card")}<p><b>${t("hint_card_b")}</b>${t("hint_card")}</p></div>`}`;
+  },
+
+  schedule() {
+    return `<h1>${t("schedule")}</h1><p class="lead">${t("today_long", { d: longDate() })}</p>
+      <div class="list">${SCHEDULE.map(e => `
+        <button class="item ${e.oldRoom || e.cancelled ? "changed" : ""}" data-act="event" data-id="${e.id}">
+          <span class="time">${e.time}<br><span class="meta">${e.end}</span></span>
+          <span class="body">
+            ${e.oldRoom ? `<span class="flag">${ic("alert")} ${t("flag_change")}</span>` : e.cancelled ? `<span class="flag">${ic("cross")} ${t("flag_cancel")}</span>` : ""}
+            <b>${t("courses")[e.c || e.id]}</b>
+            <span class="meta">${t(e.type)} · ${e.cancelled ? t("cancel_meta") : e.oldRoom ? `<b style="color:var(--navy)">${t("room")} ${e.room}</b> <span class="old">${t("instead", { old: e.oldRoom })}</span>` : `${t("room")} ${e.room}`}</span>
+          </span>${chev()}
+        </button>`).join("")}</div>`;
+  },
+
+  event() {
+    const e = SCHEDULE.find(x => x.id === S.event);
+    return `<h1>${t("courses")[e.c || e.id]}</h1><p class="lead">${t(e.type)}</p>
+      ${e.oldRoom ? `<div class="hint">${ic("alert")}<p>${t("change_hint", { room: e.room, old: e.oldRoom })} ${t("change_reason")}</p></div>` : ""}
+      ${e.cancelled ? `<div class="hint solid">${ic("cross")}<p>${t("cancel_hint")}</p></div>` : ""}
+      <div class="facts">
+        <div class="fact"><span>${t("f_time")}</span><b>${e.time}–${e.end}</b></div>
+        <div class="fact"><span>${t("f_room")}</span><b>${e.room}</b>${e.oldRoom ? ` <span class="old">${e.oldRoom}</span>` : ""}</div>
+        ${ROOMS[e.room] ? `<div class="fact"><span>${t("f_place")}</span><b>${roomWhere(e.room)}</b></div>` : ""}
+      </div>
+      ${e.cancelled ? "" : ROOMS[e.room] ? `<div class="map">${mapSvg(e.room, null)}</div>
+      <button class="btn" data-act="toRoute" data-room="${e.room}">${ic("map")} ${t("route_to", { r: e.room })}</button>` : `<div class="hint">${ic("map")}<p>${t("no_map")}</p></div>`}`;
+  },
+
+  rooms() {
+    const norm = s => s.toLocaleLowerCase(S.lang).replace(/\s/g, "");
+    const q = norm(S.query.trim());
+    const hits = Object.keys(ROOMS).filter(k => !q || norm(k + roomKind(k)).includes(q));
+    return `<h1>${t("rooms")}</h1><p class="lead">${t("lead_rooms")}</p>
+      <label class="search">${ic("search")}<input id="roomQuery" type="text" autocomplete="off" placeholder="${t("search_ph")}" value="${S.query}" aria-label="${t("search_label")}"></label>
+      <div class="list" id="roomHits">${hits.length ? hits.map(k => `
+        <button class="item" data-act="pickRoom" data-room="${k}">
+          ${ic("flag")}<span class="body"><b>${k}</b><span class="meta">${roomKind(k)} · ${roomWhere(k)}</span></span>${chev()}
+        </button>`).join("") : `<div class="hint">${ic("search")}<p>${t("no_hit")}</p></div>`}</div>`;
+  },
+
+  routeOptions() {
+    const sel = S.routeType, sh = ROUTES[S.room].short, bf = routeOf(S.room, "bf");
+    return `<h1>${t("route_h", { r: S.room })}</h1><p class="lead">${roomKind(S.room)} · ${roomWhere(S.room)}</p>
+      <h2>${t("choose_type")}</h2>
+      <div class="list">
+        <button class="choice" data-act="routeType" data-type="short" aria-pressed="${sel === "short"}">${ic("walk")}
+          <span class="body" style="display:flex;flex-direction:column;gap:4px"><b>${t("short")}</b><span class="meta">${sh.stairs ? t("has_stairs", { n: sh.stairs }) : t("stepfree")} · ${t("approx", { n: sh.min })}</span></span>${chev()}</button>
+        <button class="choice" data-act="routeType" data-type="bf" aria-pressed="${sel === "bf"}">${ic("bf")}
+          <span class="body" style="display:flex;flex-direction:column;gap:4px"><b>${t("bf")}</b><span class="meta">${t("bf_desc")} · ${t("approx", { n: bf.min })}</span></span>${chev()}</button>
+      </div>
+      <p class="note">${t("type_note")}</p>`;
+  },
+
+  route() {
+    const r = ROOMS[S.room], type = S.routeType, rt = routeOf(S.room, type);
+    return `<h1>${t("route_h", { r: S.room })}</h1>
+      <p class="lead">${type === "bf" ? `${ic("bf")} ${t("bf")}` : t("short")} · ${roomWhere(S.room)}</p>
+      <div class="map">${mapSvg(S.room, type)}</div>
+      <p class="note"><b>${t("legend")}:</b> ${type === "bf" ? t("l_bf") : t("l_short")} · ${t("l_rest", { r: S.room })}</p>
+      <div class="facts">
+        <div class="fact"><span>${t("f_way")}</span><b>${rt.m} m · ${rt.min} ${t("min")}</b></div>
+        <div class="fact"><span>${t("f_stairs")}</span><b>${rt.stairs || t("none")}</b></div>
+        <div class="fact"><span>${t("f_lifts")}</span><b>${rt.lifts || t("none")}</b></div>
+        <div class="fact"><span>${t("f_entries")}</span><b>${rt.entries || (r.b === "bT" ? t("not_needed") : t("none"))}</b></div>
+      </div>
+      <button class="btn" data-act="routeSteps">${t("open_steps")} ${chev()}</button>`;
+  },
+
+  routeSteps() {
+    const type = S.routeType, rt = routeOf(S.room, type), st = t("steps");
+    return `<h1>${t("way_to", { r: S.room })}</h1><p class="lead">${type === "bf" ? t("bf") : t("short")} · ${t("sections", { n: rt.steps.length })} · ${rt.m} m</p>
+      <ol class="steps">${rt.steps.map(([i, k]) => `<li class="${["lift", "ramp", "stairs"].includes(i) ? "key" : ""}">${ic(i)}<span>${st[k]}</span></li>`).join("")}</ol>
+      ${type === "bf" ? `<p class="note">${t("lift_status")}</p>` : ""}`;
+  },
+
+  mensa() {
+    const list = MENU[S.day].filter(d => !S.filter || d.tags.includes(S.filter) || (S.filter === "vegetarisch" && d.tags.includes("vegan")));
+    const tags = t("tags"), alg = t("alg"), names = t("dishes"), days = t("days");
+    return `<h1>${t("mensa")}</h1><p class="lead">${t("lead_mensa")}</p>
+      ${S.session ? `<div class="hint">${ic("card")}<p>${t("balance_hint", { b: euro(BALANCE) })}</p></div>` : ""}
+      <div class="seg" role="group" aria-label="${t("choose_day")}">${days.map((d, i) =>
+        `<button class="chip" data-act="day" data-day="${i}" aria-pressed="${S.day === i}">${d} <span class="d">${DATES[i]}${i === TODAY ? " · " + t("today") : ""}</span></button>`).join("")}</div>
+      <div class="seg" role="group" aria-label="${t("filter")}">
+        <button class="chip" data-act="filter" data-f="vegan" aria-pressed="${S.filter === "vegan"}">${t("only_vegan")}</button>
+        <button class="chip" data-act="filter" data-f="vegetarisch" aria-pressed="${S.filter === "vegetarisch"}">${t("only_veg")}</button>
+        ${S.filter ? `<button class="chip" data-act="filter" data-f="">${t("clear_filter")}</button>` : ""}
+      </div>
+      <h2>${S.day === TODAY ? t("Today") : t("dayNames")[S.day]}, ${DATES[S.day]}</h2>
+      <div class="list">${list.length ? list.map(d => {
+        const key = S.day + "-" + d.d, open = S.open[key];
+        return `<article class="dish">
+          <div class="dish-head"><b>${names[d.d]}</b><span class="price">${euro(d.p[0])}<small>${t("students")}</small></span></div>
+          <div class="tags">${d.tags.map(x => `<span class="tag ${x === "vegan" || x === "vegetarisch" ? "strong" : ""}">${tags[x]}</span>`).join("")}</div>
+          ${open ? `<table class="table" aria-label="${t("prices")}"><tr><td>${t("students")}</td><td>${euro(d.p[0])}</td></tr><tr><td>${t("staff")}</td><td>${euro(d.p[1])}</td></tr><tr><td>${t("guests")}</td><td>${euro(d.p[2])}</td></tr></table>
+            <p class="allergens"><b>${t("allergens")}:</b> ${d.all.map(c => `${alg[c]} (${c})`).join(S.lang === "ar" ? "، " : ", ")}</p>` : ""}
+          <button class="more" data-act="dish" data-key="${key}">${open ? t("less") : t("more")}</button>
+        </article>`; }).join("") : `<div class="hint">${ic("food")}<p>${t("no_dish")}</p></div>`}</div>`;
+  },
+
+  library() {
+    return `<h1>${t("library")}</h1>
+      <h2>${t("hours")}</h2>
+      <table class="table"><tr><td>${t("monthu")}</td><td>08:00–20:00</td></tr><tr><td>${t("fri")}</td><td>08:00–18:00</td></tr><tr><td>${t("sat")}</td><td>10:00–14:00</td></tr></table>
+      <p class="note">${t("lib_note")}</p>
+      <h2>${t("account")}</h2>
+      ${S.session
+        ? `<div class="list">
+            <div class="item">${ic("book")}<span class="body"><b lang="en">Designing Interfaces</b><span class="meta">${t("return_by", { d: "19.11.2026" })}</span></span></div>
+            <div class="item">${ic("book")}<span class="body"><b lang="de">Mensch-Computer-Interaktion: Basiswissen</b><span class="meta">${t("return_by", { d: "03.12.2026" })}</span></span></div>
+          </div>`
+        : `<div class="hint">${ic("card")}<p>${t("acct_hint")}</p></div>`}`;
+  },
+
+  links() {
+    return `<h1>${t("links")}</h1><p class="lead">${t("lead_links")}</p>
+      ${LINKS.map(([g, urls], gi) => {
+        const first = LINKS.slice(0, gi).reduce((a, l) => a + l[1].length, 0);
+        return `<h2>${t("linkGroups")[g]}</h2>
+      <div class="list">${urls.map((url, i) => { const n = first + i; return `<button class="item" data-act="link" data-n="${n}">${ic("link")}<span class="body"><b>${t("linkNames")[n]}</b><span class="meta" dir="ltr" style="overflow-wrap:anywhere">${url}</span></span>${chev()}</button>`; }).join("")}</div>`;
+      }).join("")}`;
+  },
+
+  settings() {
+    return `<h1>${t("settings")}</h1><p class="lead">${t("lead_settings")}</p>
+      <h2>${t("text_size")}</h2>
+      <div class="seg">${[[1, "size1"], [1.2, "size2"], [1.4, "size3"]].map(([v, k]) => `<button class="chip" data-act="scale" data-v="${v}" aria-pressed="${S.scale === v}">${t(k)}</button>`).join("")}</div>
+      <h2>${t("contrast")}</h2>
+      <div class="seg">${[["std", "c_std"], ["high", "c_high"]].map(([v, k]) => `<button class="chip" data-act="contrast" data-v="${v}" aria-pressed="${S.contrast === v}">${t(k)}</button>`).join("")}</div>
+      <h2>${t("language")}</h2>
+      <div class="seg">${LANGS.map(([code, name]) => `<button class="chip" data-act="lang" data-lang="${code}" lang="${code}" aria-pressed="${S.lang === code}">${name}</button>`).join("")}</div>`;
+  },
+};
+
+/* ---------- Rendern ---------- */
+const $screen = document.getElementById("screen");
+function render(scrollTop) {
+  const prevScroll = $screen.querySelector("main")?.scrollTop || 0;
+  $screen.lang = S.lang;
+  $screen.dir = S.lang === "ar" ? "rtl" : "ltr";
+  $screen.innerHTML = header() + `<main class="${scrollTop ? "fade" : ""}">${V[S.screen]()}</main>` + nav() + overlay();
+  if (!scrollTop) $screen.querySelector("main").scrollTop = prevScroll;
+  document.documentElement.style.setProperty("--scale", S.scale);
+  document.documentElement.lang = "de";
+  $screen.classList.toggle("large", S.scale > 1);
+  $screen.classList.toggle("hc", S.contrast === "high");
+  const rl = document.getElementById("readerLabel");
+  rl.textContent = t("reader"); rl.lang = S.lang;
+  const cb = document.getElementById("cardBtn");
+  const hl = !S.session && S.notice === "card";
+  cb.className = "card-btn" + (S.session ? " on" : hl ? " hl" : "");
+  cb.lang = S.lang;
+  cb.innerHTML = `${ic("card")} ${S.session ? t("card_off") : hl ? t("card_here") : t("card_on")}`;
+  cb.disabled = busy;
+  const q = document.getElementById("roomQuery");
+  if (q) q.addEventListener("input", e => { S.query = e.target.value; const pos = e.target.selectionStart; render(false); const n = document.getElementById("roomQuery"); n.focus(); n.setSelectionRange(pos, pos); });
+  autoTicks();
+}
+function overlay() {
+  if (!S.overlay) return "";
+  const o = {
+    read: [ic("card", "i pulse"), t("read_h"), t("read_p")],
+    ok: [ic("check"), t("ok_h", { n: NAME }), t("ok_p")],
+    bye: [ic("check"), t("bye_h"), t("bye_p")],
+  }[S.overlay];
+  const mark = S.overlay === "bye" ? `<div class="logo-card"><img src="${LOGO_TEXT}" alt="LUXIA LUMY"></div>` : o[0];
+  return `<div class="overlay" role="status">${mark}<h2>${o[1]}</h2><p>${o[2]}</p></div>`;
+}
+function autoTicks() {
+  if (S.session && S.screen === "home" && !S.overlay) tick("luca", 1);
+}
+
+/* ---------- Karte auflegen / entfernen ---------- */
+const wait = ms => new Promise(r => setTimeout(r, matchMedia("(prefers-reduced-motion: reduce)").matches ? Math.min(ms, 500) : ms));
+async function toggleCard() {
+  if (busy) return;
+  busy = true;
+  if (!S.session) {
+    tick("luca", 0);
+    S.overlay = "read"; render(false); await wait(900);
+    S.overlay = "ok"; render(false); await wait(1100);
+    Object.assign(S, { session: true, overlay: null, screen: "home", history: [], notice: null });
+  } else {
+    if (done.luca.has(0)) tick("luca", 5);
+    S.overlay = "bye"; render(false); await wait(1700);
+    Object.assign(S, { session: false, overlay: null, screen: "home", history: [], event: null, notice: null });
+  }
+  busy = false;
+  render(true);
+}
+
+/* ---------- Aktionen ---------- */
+$screen.addEventListener("click", e => {
+  const b = e.target.closest("[data-act]");
+  if (!b || S.overlay) return;
+  switch (b.dataset.act) {
+    case "back": return back();
+    case "home": return home();
+    case "schedule":
+      if (!S.session) { S.notice = "card"; render(true); return; }
+      tick("luca", 2); return go("schedule");
+    case "event":
+      tick("luca", 2); if (b.dataset.id === "mci") tick("luca", 3);
+      return go("event", { event: b.dataset.id });
+    case "toRoute": return go("routeOptions", { room: b.dataset.room, routeType: null });
+    case "rooms": tick("leonie", 0); return go("rooms", { query: "" });
+    case "pickRoom":
+      if (b.dataset.room === "H 210") tick("leonie", 1);
+      return go("routeOptions", { room: b.dataset.room, routeType: null });
+    case "routeType":
+      if (b.dataset.type === "bf" && S.room === "H 210") tick("leonie", 2, 3);
+      if (S.session && S.room === "T151") tick("luca", 4);
+      return go("route", { routeType: b.dataset.type });
+    case "routeSteps":
+      if (S.routeType === "bf" && S.room === "H 210") tick("leonie", 4);
+      return go("routeSteps");
+    case "mensa":
+      if (!S.session) tick("mara", 0, 1, 2);
+      return go("mensa", { day: START_DAY, filter: null });
+    case "day": S.day = Number(b.dataset.day); return render(false);
+    case "filter": S.filter = b.dataset.f || null; return render(false);
+    case "dish":
+      S.open[b.dataset.key] = !S.open[b.dataset.key];
+      if (!S.session && S.open[b.dataset.key]) tick("mara", 3);
+      return render(false);
+    case "library": return go("library");
+    case "links": return go("links");
+    case "settings": return go("settings");
+    case "scale": S.scale = Number(b.dataset.v); return render(false);
+    case "contrast": S.contrast = b.dataset.v; return render(false);
+    case "lang": S.lang = b.dataset.lang; return render(false);
+  }
+});
+document.getElementById("cardBtn").addEventListener("click", toggleCard);
+
+/* ---------- Walkthrough-Leiste ---------- */
+function renderPanel() {
+  document.getElementById("tabs").innerHTML = Object.entries(TASKS).map(([k, x]) =>
+    `<button role="tab" aria-selected="${k === task}" data-task="${k}">${x.name}</button>`).join("");
+  const x = TASKS[task], d = done[task];
+  const pct = Math.round(d.size / x.steps.length * 100);
+  document.getElementById("task").innerHTML = `
+    <span class="label">Aufgabe · ${x.full}</span>
+    <b style="color:var(--navy);font-size:17px">${x.title}</b>
+    <p>${x.scenario}</p>
+    <div class="progress" aria-hidden="true"><i style="width:${pct}%"></i></div>
+    <ol class="checks">${x.steps.map((s, i) => `<li class="${d.has(i) ? "done" : ""}"><label>
+      <input type="checkbox" id="chk-${task}-${i}" data-i="${i}" ${d.has(i) ? "checked" : ""}><span class="n">${i + 1}</span><span>${s}</span></label></li>`).join("")}</ol>
+    ${d.size === x.steps.length ? `<p class="success">Erfolgskriterium erreicht.</p>` : `<p><span class="label">Erfolgskriterium</span><br>${x.goal}</p>`}`;
+}
+document.getElementById("tabs").addEventListener("click", e => {
+  const b = e.target.closest("[data-task]"); if (!b) return;
+  task = b.dataset.task; renderPanel();
+});
+document.getElementById("task").addEventListener("change", e => {
+  const i = Number(e.target.dataset.i);
+  e.target.checked ? done[task].add(i) : done[task].delete(i);
+  renderPanel();
+});
+document.getElementById("reset").addEventListener("click", () => {
+  if (busy) return;
+  S = fresh(); done = { luca: new Set(), mara: new Set(), leonie: new Set() };
+  render(true); renderPanel();
+});
+
+renderPanel();
+render(true);
+/* Uhrzeit läuft live mit (Gerätezeit) */
+setInterval(() => { const c = document.getElementById("clockTime"); const v = nowTime(); if (c && c.textContent !== v) c.textContent = v; }, 5000);
+</script>
+
+</body></html>
